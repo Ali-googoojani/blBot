@@ -416,7 +416,7 @@ export class blBot {
         }
     }
     //-i think this method does not support by bale 
-    async downloadFile(file_path: string) {
+    async downloadFile(output_path: string, file_path: string) {
         try {
             if (!file_path) {
                 throw new Error("the file_path parameter is empty!");
@@ -425,10 +425,13 @@ export class blBot {
             const response = await fetch(
                 `https://tapi.bale.ai/bot${this.token}/${file_path}`,
             );
+            if (!response.ok) {
+                throw new Error("something is wrong");
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
 
-            const json = await response.json();
-            console.log(json);
-            return json;
+            fs.writeFileSync(output_path, buffer);
 
         } catch (error) {
             console.error(error);

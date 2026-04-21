@@ -1,0 +1,1 @@
+export type ActionType = "typing" | "upload_photo" | "record_video" | "upload_video" | "record_voice" | "upload_voice" | "choose_sticker";
