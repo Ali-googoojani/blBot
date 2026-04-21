@@ -11,6 +11,7 @@ import { InputMediaDocument } from "./Entities/InputMediaDocument";
 import { InputMediaPhoto } from "./Entities/InputMediaPhoto";
 import { Update } from "./Entities/Update";
 import { InlineKeyBoard } from "./Entities/InlineKeyBoard";
+import { ActionType } from "./Entities/Action";
 
 
 
@@ -366,5 +367,73 @@ export class blBot {
             console.error(error);
         }
     }
+
+    async sendChatAction(chatId: string | number, action: ActionType) {
+        try {
+            const formData = new FormData();
+            formData.append("chat_id", `${chatId}`);
+            formData.append("action", `${action}`);
+
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/sendChatAction`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            const json = await response.json();
+            console.log(json);
+            return json;
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    /* this method return something like this json
+
+    {"ok":true,"result":{"file_id":"213---1538:782065596---6566275:0:88d---66831f3488","file_unique_id":"213---1538:782065596---6566275:0:88d---66831f3488","file_size":85,"file_path":"213---1538:782065596---6566275:0:88d---66831f3488"}}
+    */
+    async getFile(file_id: string) {
+        try {
+            const formData = new FormData();
+            formData.append("file_id", `${file_id}`);
+
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/getFile`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            const json = await response.json();
+            console.log(json);
+            return json;
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    //-i think this method does not support by bale 
+    async downloadFile(file_path: string) {
+        try {
+            if (!file_path) {
+                throw new Error("the file_path parameter is empty!");
+            }
+
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/${file_path}`,
+            );
+
+            const json = await response.json();
+            console.log(json);
+            return json;
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
 }
 
