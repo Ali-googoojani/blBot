@@ -438,5 +438,28 @@ export class blBot {
         }
     }
 
+    async askReview(user_id: number, delay_seconds: number) {
+        try {
+            if (!user_id) {
+                throw new Error("the user_id parameter is empty!");
+            }
+            if (!delay_seconds) {
+                throw new Error("the user_id parameter is empty!");
+            }
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/askReview?user_id=${user_id}&delay_seconds=${delay_seconds}`,
+            );
+            if (!response.ok) {
+                throw new Error("something is wrong");
+            }
+            const responseJson = await response.json();
+            
+            return responseJson
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
 }
 
