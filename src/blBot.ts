@@ -18,62 +18,93 @@ import { ActionType } from "./Entities/Action";
 
 export class blBot {
     private token: string = "";
-    public message: Update;
-    private updateId: number | undefined = 0;
+    private updateId: number = 0;
     constructor(token: string) {
         this.token = `${token}`;
-        this.updateId = Number(readUpdateId());
+        readUpdateId().then(x => this.updateId = Number(x)).then(() => { console.log(this.updateId) }).catch(x => { console.log("error") });
+
 
     }
     private sleep(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        return new Promise(resolve => setTimeout(() => { }, ms));
     }
-    async Polling(main: () => void) {
-        while (true) {
-            try {
-                const sendRequest = await fetch(`https://tapi.bale.ai/bot${this.token}/getUpdates?offset=${this.updateId}`);
-                const responseJson: Result = await sendRequest.json();
-                if (responseJson.ok && responseJson.result && responseJson.result.length > 0) {
-                    responseJson["result"].forEach((item: Update) => {
-                        if (item.update_id != this.updateId) {
+    async Polling(main: (message: Update) => Promise<void>) {
+        if (!this.updateId) this.updateId = 0;
 
-                            this.message = item;
-                            if (this.updateId) {
-                                this.updateId += 1;
-                                saveUpdateId(this.updateId.toString());
-                            }
-                            else {
-                                throw new Error("update_id is undifined");
-                            }
-                            main()
+        while (true) {
+            console.log("Polling with offset:", this.updateId);
+
+            try {
+                const res = await fetch(
+                    `https://tapi.bale.ai/bot${this.token}/getUpdates?offset=${this.updateId}&timeout=10`
+                );
+
+                const json: Result = await res.json();
+
+                if (json.ok && Array.isArray(json.result)) {
+                    for (const item of json.result) {
+
+
+                        try {
+                            await main(item);
+                        } catch (error: any) {
+                            throw new Error(`an error occur:${error.message} }`);
+
                         }
-                    });
+
+                        this.updateId = item.update_id + 1;
+
+
+                        await saveUpdateId(String(this.updateId));
+                    }
                 }
-            } catch (error) {
-                console.log(error)
-                throw new Error("can't send request");
+            } catch (error: any) {
+                console.error("Polling error:", error);
+                throw new Error(`an error occur:${error.message} }`);
             }
 
-
-            await this.sleep(7000);
+            Promise.resolve(this.sleep(3000))
+        }
+    }
+    async testRegex(regex: string, text: string): Promise<Record<string, any>> {
+        try {
+            const regExp = new RegExp(regex);
+            const match = regExp.test(text);
+            return { ok: true, result: `${match}` }
+        } catch (error: any) {
+            throw new Error(`an error occur:${error.message}`);
         }
     }
     // Test token of bot
     async getMe() {
         try {
-            const sendRequest = await fetch(`https://tapi.bale.ai/bot${this.token}/getMe`);
-            const responseJson = await sendRequest.json();
-            return responseJson;
+            const response = await fetch(`https://tapi.bale.ai/bot${this.token}/getMe`);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
         }
-        catch (error) {
-            console.log(error);
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
+
     // Send a message via bot to specific chat or user
-    async sendMessage(chatId: string | number | undefined, text: string, reply_to_message_id?: number, reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
+    async sendMessage(chat_id: string | number | undefined, text: string, reply_to_message_id?: number, reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
         try {
+
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!text) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+
             const formData = new FormData();
-            formData.append("chat_id", `${chatId}`);
+            formData.append("chat_id", `${chat_id}`);
             formData.append("text", `${text}`);
             if (reply_to_message_id) {
                 formData.append("reply_to_message_id", `${reply_to_message_id}`)
@@ -81,45 +112,79 @@ export class blBot {
             if (reply_markup) {
                 formData.append("reply_markup", `${JSON.stringify(reply_markup)}`)
             }
-            console.log(reply_markup);
 
-            const sendRequest = await fetch(`https://tapi.bale.ai/bot${this.token}/sendMessage`, { method: "POST", body: formData });
+            const response = await fetch(`https://tapi.bale.ai/bot${this.token}/sendMessage`,
+                {
+                    method: "POST",
+                    body: formData
+                });
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
 
-            const responseJson = await sendRequest.json();
-            console.log(responseJson);
         }
-        catch (error) {
-            console.log(error);
+        catch (error: any) {
+            throw new Error(`{ ok: false, message: ${error.message} }`);
+
         }
 
     }
 
-    async forwardMessage(chatId: string | number, from_chat_id: string | number, message_id: number) {
+    async forwardMessage(chat_id: string | number, from_chat_id: string | number, message_id: number) {
         try {
-            const sendRequest = await fetch(`https://tapi.bale.ai/bot${this.token}/forwardMessage?chat_id=${chatId}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
 
-            const responseJson = await sendRequest.json();
-            console.log(responseJson);
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!from_chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!message_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+
+            const response = await fetch(`https://tapi.bale.ai/bot${this.token}/forwardMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
         }
-        catch (error) {
-            console.log(error);
+        catch (error: any) {
+            throw new Error(`{ ok: false, message: ${error.message} }`);
         }
     }
 
-    async copyMessage(chatId: string | number, from_chat_id: string | number, message_id: number) {
+    async copyMessage(chat_id: string | number | undefined, from_chat_id: string | number, message_id: number) {
         try {
-            const sendRequest = await fetch(`https://tapi.bale.ai/bot${this.token}/copyMessage?chat_id=${chatId}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
 
-            const responseJson = await sendRequest.json();
-            console.log(responseJson);
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!from_chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!message_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+
+            const response = await fetch(`https://tapi.bale.ai/bot${this.token}/copyMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
         }
-        catch (error) {
-            console.log(error);
+        catch (error: any) {
+
+            return { ok: false, message: `${error.message}` }
         }
     }
     // Send Photo file using string or InputFile
     private async sendContent(
-        chatId: string | number | undefined,
+        chat_id: string | number | undefined,
         from_chat_id: string | number | undefined,
         content: InputFile | string,
         content_type: string,
@@ -129,12 +194,24 @@ export class blBot {
         method?: string
     ) {
         try {
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!from_chat_id) {
+                throw new Error("the from_chat_id parameter is empty!");
+            }
+            if (!content) {
+                throw new Error("the content parameter is empty!");
+            }
+            if (!content_type) {
+                throw new Error("the content_type parameter is empty!");
+            }
             if (!method) {
                 throw new Error("the method argument is empty");
             }
             const formData = new FormData();
 
-            formData.append("chat_id", String(chatId));
+            formData.append("chat_id", String(chat_id));
             formData.append("from_chat_id", String(from_chat_id));
             if (caption) formData.append("caption", caption);
 
@@ -146,49 +223,46 @@ export class blBot {
                 formData.append("reply_markup", JSON.stringify(reply_markup));
             }
 
-            // --- حالت‌های مختلف photo ---
+
             if (typeof content === "string") {
-                // file_id یا URL
+
                 formData.append(`${content_type}`, content);
                 console.log(`Appending content as string: ${content}`);
             }
             else if (content instanceof fs.ReadStream) {
-                // تبدیل ReadStream به Blob
+
                 const chunks: Buffer[] = [];
                 for await (const chunk of content) chunks.push(chunk);
                 const buffer = Buffer.concat(chunks);
 
                 const blob = new Blob([buffer]);
-                const fileName = path.basename(content.path);
+                const fileName = path.basename(content.path.toString());
                 formData.append(`${content_type}`, blob, fileName);
                 console.log(`Appending content as stream: ${fileName}`);
             }
             else {
-                throw new Error("Invalid type for photo parameter.");
+                throw new Error(`Invalid type for content parameter.`);
             }
 
-            // --- ارسال ---
+
             const response = await fetch(`https://tapi.bale.ai/bot${this.token}/${method}`, {
                 method: "POST",
                 body: formData,
             });
 
-            // --- بررسی پاسخ ---
-            const text = await response.text();
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
 
             try {
-                const json = JSON.parse(text);
-                console.log(json);
-                return json;
+                const responseJson = await response.json();
+                return { ok: true, status: response.status, result: `${responseJson}` }
             } catch {
-                throw new Error(`Invalid JSON response from server: ${text}`);
+
+                throw new Error(`Invalid JSON response from server`);
             }
-        } catch (error) {
-            console.error("Error sending content:", error);
-            throw error;
+        } catch (error: any) {
+            throw new Error(`an error occur ${error.message}`);
         }
     }
     async sendPhoto(
@@ -198,7 +272,8 @@ export class blBot {
         caption?: string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        await this.sendContent(chatId, from_chat_id, photo, "photo", caption, reply_to_message_id, reply_markup, "sendPhoto");
+        const res = await this.sendContent(chatId, from_chat_id, photo, "photo", caption, reply_to_message_id, reply_markup, "sendPhoto");
+        return res;
     }
     async sendAudio(
         chatId: string | number | undefined,
@@ -207,7 +282,8 @@ export class blBot {
         caption?: string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        await this.sendContent(chatId, from_chat_id, Audio, "audio", caption, reply_to_message_id, reply_markup, "sendAudio");
+        const res = await this.sendContent(chatId, from_chat_id, Audio, "audio", caption, reply_to_message_id, reply_markup, "sendAudio");
+        return res
     }
 
     async sendDocument(
@@ -217,7 +293,8 @@ export class blBot {
         caption?: string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        await this.sendContent(chatId, from_chat_id, document, "document", caption, reply_to_message_id, reply_markup, "sendDocument");
+        const res = await this.sendContent(chatId, from_chat_id, document, "document", caption, reply_to_message_id, reply_markup, "sendDocument");
+        return res;
     }
 
     async sendVideo(
@@ -227,7 +304,8 @@ export class blBot {
         caption?: string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        await this.sendContent(chatId, from_chat_id, video, "video", caption, reply_to_message_id, reply_markup, "sendVideo");
+        const res = await this.sendContent(chatId, from_chat_id, video, "video", caption, reply_to_message_id, reply_markup, "sendVideo");
+        return res;
     }
     async sendAnimation(
         chatId: string | number | undefined,
@@ -235,7 +313,8 @@ export class blBot {
         animation: InputFile | string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        await this.sendContent(chatId, from_chat_id, animation, "animation", "", reply_to_message_id, reply_markup, "sendAnimation");
+        const res = await this.sendContent(chatId, from_chat_id, animation, "animation", "", reply_to_message_id, reply_markup, "sendAnimation");
+        return res;
     }
 
     async sendVoice(
@@ -245,49 +324,50 @@ export class blBot {
         caption?: string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        await this.sendContent(chatId, from_chat_id, voice, "voice", caption, reply_to_message_id, reply_markup, "sendVoice");
+        const res = await this.sendContent(chatId, from_chat_id, voice, "voice", caption, reply_to_message_id, reply_markup, "sendVoice");
+        return res;
     }
 
     async sendMediaGroup(
-        chatId: string | number | undefined,
+        chat_id: string | number | undefined,
         media: Array<InputMediaVideo | InputMediaAudio | InputMediaDocument | InputMediaPhoto>,
         reply_to_message_id?: number
     ) {
 
         try {
 
-            if (!chatId) {
-                throw new Error("chat_id is empty");
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
             }
             if (!media) {
-                throw new Error("media is empty")
+                throw new Error("the media parameter is empty!");
             }
             const formData = new FormData();
 
-            formData.append("chat_id", String(chatId));
+            formData.append("chat_id", String(chat_id));
             formData.append("media", JSON.stringify(media));
-            console.log(JSON.stringify(media))
+            console.log(JSON.stringify(media));
             if (reply_to_message_id) {
                 formData.append("reply_to_message_id", String(reply_to_message_id));
             }
 
             const response = await fetch(`https://tapi.bale.ai/bot${this.token}/sendMediaGroup`, { method: "POST", body: formData });
-            const responseJson = await response.text()
 
-            if (response.ok) {
-                console.log(responseJson);
-                return JSON.stringify(responseJson);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
-            console.log(responseJson);
-            return JSON.stringify(responseJson);
+
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: responseJson }
         }
-        catch (error) {
-            console.log(error)
+        catch (error: any) {
+            throw new Error(`an error occur:${error.message}`);
         }
     }
 
     async sendLocation(
-        chatId: string | number,
+        chat_id: string | number,
         latitude: number,
         longitude: number,
         horizontal_accuracy?: number,
@@ -296,8 +376,16 @@ export class blBot {
     ) {
         try {
             const formData = new FormData();
-
-            formData.append("chat_id", `${chatId}`);
+            if (chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (latitude) {
+                throw new Error("the latitude parameter is empty!");
+            }
+            if (longitude) {
+                throw new Error("the longitude parameter is empty!");
+            }
+            formData.append("chat_id", `${chat_id}`);
             formData.append("latitude", `${latitude}`);
             formData.append("longitude", `${longitude}`);
 
@@ -317,18 +405,20 @@ export class blBot {
                     body: formData
                 }
             );
+            if (!response.ok) {
+                throw new Error(`{ ok: false, status: ${response.status}, message: ${response.statusText} }`);
+            }
 
-            const json = await response.json();
-            console.log(json);
-            return json;
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: responseJson }
 
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
 
     async sendContact(
-        chatId: string | number,
+        chat_id: string | number,
         phone_number: string | number,
         first_name: string,
         last_name?: string,
@@ -337,8 +427,16 @@ export class blBot {
     ) {
         try {
             const formData = new FormData();
-
-            formData.append("chat_id", `${chatId}`);
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!phone_number) {
+                throw new Error("the phone_number parameter is empty!");
+            }
+            if (!first_name) {
+                throw new Error("the first_name parameter is empty!");
+            }
+            formData.append("chat_id", `${chat_id}`);
             formData.append("phone_number", `${phone_number}`);
             formData.append("first_name", `${first_name}`);
 
@@ -350,6 +448,7 @@ export class blBot {
 
             if (reply_markup !== undefined)
                 formData.append("reply_markup", JSON.stringify(reply_markup));
+
             console.log(JSON.stringify(reply_markup))
             const response = await fetch(
                 `https://tapi.bale.ai/bot${this.token}/sendContact`,
@@ -358,20 +457,28 @@ export class blBot {
                     body: formData
                 }
             );
+            if (!response.ok) {
+                return {
+                    ok: false, status: `${response.status}`, message: `${response.statusText}`
+                };
+            }
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: responseJson }
 
-            const json = await response.json();
-            console.log(json);
-            return json;
-
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
 
-    async sendChatAction(chatId: string | number, action: ActionType) {
+    async sendChatAction(chat_id: string | number | undefined, action: ActionType) {
         try {
+
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+
             const formData = new FormData();
-            formData.append("chat_id", `${chatId}`);
+            formData.append("chat_id", `${chat_id}`);
             formData.append("action", `${action}`);
 
             const response = await fetch(
@@ -381,21 +488,28 @@ export class blBot {
                     body: formData
                 }
             );
+            if (!response.ok) {
+                return {
+                    ok: false, status: `${response.status}`, message: `${response.statusText}`
+                };
+            }
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
 
-            const json = await response.json();
-            console.log(json);
-            return json;
-
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message} `);
         }
     }
+
     /* this method return something like this json
 
     {"ok":true,"result":{"file_id":"213---1538:782065596---6566275:0:88d---66831f3488","file_unique_id":"213---1538:782065596---6566275:0:88d---66831f3488","file_size":85,"file_path":"213---1538:782065596---6566275:0:88d---66831f3488"}}
     */
     async getFile(file_id: string) {
         try {
+            if(!file_id){
+                throw new Error("the file_id parameter is empty!");
+            }
             const formData = new FormData();
             formData.append("file_id", `${file_id}`);
 
@@ -406,15 +520,17 @@ export class blBot {
                     body: formData
                 }
             );
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
 
-            const json = await response.json();
-            console.log(json);
-            return json;
-
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
+
     //-i think this method does not support by bale 
     async downloadFile(output_path: string, file_path: string) {
         try {
@@ -426,15 +542,17 @@ export class blBot {
                 `https://tapi.bale.ai/bot${this.token}/${file_path}`,
             );
             if (!response.ok) {
-                throw new Error("something is wrong");
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
             fs.writeFileSync(output_path, buffer);
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
 
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
 
@@ -444,20 +562,176 @@ export class blBot {
                 throw new Error("the user_id parameter is empty!");
             }
             if (!delay_seconds) {
-                throw new Error("the user_id parameter is empty!");
+                throw new Error("the delay_seconds parameter is empty!");
             }
             const response = await fetch(
                 `https://tapi.bale.ai/bot${this.token}/askReview?user_id=${user_id}&delay_seconds=${delay_seconds}`,
             );
             if (!response.ok) {
-                throw new Error("something is wrong");
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
             const responseJson = await response.json();
-            
-            return responseJson
 
-        } catch (error) {
-            console.error(error);
+            return { ok: true, status: response.status, result: `${responseJson}` }
+
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
+        }
+    }
+
+    async banChatMember(chat_id: string | number, user_id: number) {
+        try {
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!user_id) {
+                throw new Error("the user_id parameter is empty!");
+            }
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/banChatMember?chat_id=${user_id}&user_id=${user_id}`,
+            );
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson }
+
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
+        }
+    }
+
+
+    async unbanChatMember(chat_id: string | number, user_id: number, only_if_banned: boolean) {
+        try {
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!user_id) {
+                throw new Error("the user_id parameter is empty!");
+            }
+            if (!only_if_banned) {
+                throw new Error("the only_if_banned parameter is empty!");
+            }
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/unbanChatMember?chat_id=${chat_id}&user_id=${user_id}&only_if_banned=${only_if_banned}`,
+            );
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: `${responseJson}` }
+
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
+        }
+    }
+
+
+    async promoteChatMember(chat_id: string | number, user_id: number, can_change_info?: boolean, can_post_messages?: boolean, can_edit_messages?: boolean, can_delete_messages?: boolean, can_manage_video_chats?: boolean, can_invite_users?: boolean, can_restrict_members?: boolean) {
+        try {
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!user_id) {
+                throw new Error("the user_id parameter is empty!");
+            }
+
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/promoteChatMember?chat_id=${chat_id}&user_id=${user_id}&can_change_info=${can_change_info}&can_post_messages=${can_post_messages}&can_edit_messages=${can_edit_messages}&can_delete_messages=${can_delete_messages}&can_manage_video_chats=${can_manage_video_chats}&can_invite_users=${can_invite_users}&can_restrict_members=${can_restrict_members}`,
+            )
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson }
+
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
+        }
+    }
+
+    async editMessageText(
+        chat_id: string | number | undefined,
+        message_id: number | undefined,
+        text: string) {
+        try {
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!message_id) {
+                throw new Error("the user_id parameter is empty!");
+            }
+            if (!text) {
+                throw new Error("the text parameter is empty!");
+            }
+            const formData = new FormData();
+            formData.append("chat_id", `${chat_id}`);
+            formData.append("message_id", `${message_id}`);
+            formData.append("text", `${text}`);
+
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/editMessageText`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+
+    }
+
+    async editMessageReplyMarkup(
+        chat_id: string | number | undefined,
+        message_id: number | undefined,
+        reply_markup: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
+        try {
+            if (!chat_id) {
+                throw new Error("the chat_id parameter is empty!");
+            }
+            if (!message_id) {
+                throw new Error("the user_id parameter is empty!");
+            }
+            if (!reply_markup) {
+                throw new Error("the reply_markup parameter is empty!");
+            }
+            const formData = new FormData();
+            formData.append("chat_id", `${chat_id}`);
+            formData.append("message_id", `${message_id}`);
+            formData.append("reply_markup", `${JSON.stringify(reply_markup)}`);
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/editMessageReplyMarkup`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+            if (!response.ok) {
+
+                return {
+                    ok: false, status: `${response.status}`, message: `${response.statusText}`
+                };
+            }
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson }
+
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
 
