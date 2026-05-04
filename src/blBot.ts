@@ -869,7 +869,107 @@ export class blBot {
         }
     }
 
+    async setChatTitle(chat_id: string | number | undefined, title: string | undefined) {
 
+        if (!chat_id) {
+            throw new Error("the chat_id parameter is empty!");
+        }
+        if (!title) {
+            throw new Error("the title parameter is empty!");
+        }
+
+
+
+        try {
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/setChatTitle?chat_id=${chat_id}&title=${title}`);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
+
+
+    async deleteChatPhoto(chat_id: string | number | undefined) {
+        try {
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/deleteChatPhoto?chat_id=${chat_id}`);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
+
+    async createChatInviteLink(chat_id: string | number | undefined) {
+        try {
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/createChatInviteLink?chat_id=${chat_id}`);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
+
+
+    async revokeChatInviteLink(chat_id: string | number | undefined, invite_link: string | undefined) {
+        try {
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/revokeChatInviteLink?chat_id=${chat_id}&invite_link=${invite_link}`);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
+
+    async exportChatInviteLink(chat_id: string | number | undefined) {
+        try {
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/exportChatInviteLink?chat_id=${chat_id}`);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
     async editMessageText(
         chat_id: string | number | undefined,
         message_id: number | undefined,
@@ -951,4 +1051,3 @@ export class blBot {
     }
 
 }
-
