@@ -766,7 +766,7 @@ export class blBot {
                 result: res.result
             };
         }
-        
+
         return {
             ok: false,
             status: res.status ?? null,
@@ -798,6 +798,77 @@ export class blBot {
             throw new Error(`an error occur: ${error.message}`)
         }
     }
+    async pinChatMessage(chat_id: string | number | undefined, message_id: string | number | undefined) {
+        if (!chat_id) {
+            throw new Error("the chat_id parameter is empty!");
+        }
+        if (!message_id) {
+            throw new Error("the message_id parameter is empty!");
+        }
+
+        try {
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/pinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
+    async unPinChatMessage(chat_id: string | number | undefined, message_id: string | number | undefined) {
+        if (!chat_id) {
+            throw new Error("the chat_id parameter is empty!");
+        }
+        if (!message_id) {
+            throw new Error("the message_id parameter is empty!");
+        }
+
+        try {
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/unPinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
+
+    async unpinAllChatMessages(chat_id: string | number | undefined) {
+        if (!chat_id) {
+            throw new Error("the chat_id parameter is empty!");
+        }
+
+        try {
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/unpinAllChatMessages?chat_id=${chat_id}`);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
+
 
     async editMessageText(
         chat_id: string | number | undefined,
