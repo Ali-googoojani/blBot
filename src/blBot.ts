@@ -12,6 +12,8 @@ import { InputMediaPhoto } from "./Entities/InputMediaPhoto";
 import { Update } from "./Entities/Update";
 import { InlineKeyBoard } from "./Entities/InlineKeyBoard";
 import { ActionType } from "./Entities/Action";
+import { ChatFullInfo } from "./Entities/ChatFullInfo";
+import { ChatMember } from "./Entities/ChatMember";
 
 
 
@@ -43,7 +45,6 @@ export class blBot {
 
                 if (json.ok && Array.isArray(json.result)) {
                     for (const item of json.result) {
-
 
                         try {
                             await main(item);
@@ -507,7 +508,7 @@ export class blBot {
     */
     async getFile(file_id: string) {
         try {
-            if(!file_id){
+            if (!file_id) {
                 throw new Error("the file_id parameter is empty!");
             }
             const formData = new FormData();
@@ -654,6 +655,149 @@ export class blBot {
             throw new Error(`an error occur: ${error.message}`);
         }
     }
+    async setChatPhoto(chat_id: string | number | undefined, photo: InputFile) {
+        if (!chat_id) {
+            throw new Error("the chat_id parameter is empty!");
+        }
+        if (!photo) {
+            throw new Error("the photo parameter is empty!");
+        }
+        try {
+            const formData = new FormData();
+
+            formData.append("chat_id", `${chat_id}`);
+            if (photo instanceof fs.ReadStream) {
+                const chunks: Buffer[] = [];
+                for await (const chunk of photo) chunks.push(chunk);
+                const buffer = Buffer.concat(chunks);
+
+                const blob = new Blob([buffer]);
+                const fileName = path.basename(photo.path.toString());
+                formData.append(`photo`, blob, fileName);
+                console.log(`Appending content as stream: ${fileName}`);
+
+            }
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/setChatPhoto`,
+                {
+                    method: "POST",
+                    body: formData
+                });
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+
+    }
+    async FunctionsWithChatIdOnly(chat_id: string | number | undefined, type: string | undefined) {
+        if (!chat_id) {
+            throw new Error("the chat_id parameter is empty!");
+        }
+        try {
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/${type}?chat_id=${chat_id}`);
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
+
+
+    async leaveChat(chat_id: string | number | undefined) {
+        const res = await this.FunctionsWithChatIdOnly(chat_id, "leaveChat");
+        return res;
+    }
+
+    async getChat(chat_id: string | number | undefined) {
+        const res = await this.FunctionsWithChatIdOnly(chat_id, "getChat");
+        if (res?.ok) {
+            return {
+                ok: true,
+                status: res.status,
+                result: res.result as ChatFullInfo
+            };
+        }
+
+        return {
+            ok: false,
+            status: res.status ?? null,
+            message: res.message ?? "Unknown error"
+        }
+
+    }
+
+
+
+    async getChatAdministrators(chat_id: string | number | undefined) {
+        const res = await this.FunctionsWithChatIdOnly(chat_id, "getChatAdministrators");
+        if (res.ok) {
+            return {
+                ok: true,
+                status: res.status ?? null,
+                result: res.result as ChatMember[]
+            };
+        }
+
+        return {
+            ok: false,
+            status: res.status ?? null,
+            message: res.message ?? "Unknown error"
+        };
+    }
+
+    async getChatMembersCount(chat_id: string | number | undefined) {
+        const res = await this.FunctionsWithChatIdOnly(chat_id, "getChatMembersCount");
+        if (res?.ok) {
+            return {
+                ok: true,
+                status: res.status ?? null,
+                result: res.result
+            };
+        }
+        
+        return {
+            ok: false,
+            status: res.status ?? null,
+            message: res.message ?? "Unknown error"
+        };
+    }
+
+    async getChatMember(chat_id: string | number | undefined, user_id: string | number | undefined) {
+        if (!chat_id) {
+            throw new Error("the chat_id parameter is empty!");
+        }
+        if (!user_id) {
+            throw new Error("the user_id parameter is empty!");
+        }
+
+        try {
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/getChatMember?chat_id=${chat_id}&user_id=${user_id}`);
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson: ChatMember = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
 
     async editMessageText(
         chat_id: string | number | undefined,
@@ -664,7 +808,7 @@ export class blBot {
                 throw new Error("the chat_id parameter is empty!");
             }
             if (!message_id) {
-                throw new Error("the user_id parameter is empty!");
+                throw new Error("the message_id parameter is empty!");
             }
             if (!text) {
                 throw new Error("the text parameter is empty!");
