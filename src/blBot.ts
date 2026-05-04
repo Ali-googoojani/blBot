@@ -14,6 +14,7 @@ import { InlineKeyBoard } from "./Entities/InlineKeyBoard";
 import { ActionType } from "./Entities/Action";
 import { ChatFullInfo } from "./Entities/ChatFullInfo";
 import { ChatMember } from "./Entities/ChatMember";
+import { InlineKeyboardButton } from "./Entities/InlineKeyboardButton";
 
 
 
@@ -1009,7 +1010,87 @@ export class blBot {
         }
 
     }
+    async editMessageCaption(
+        chat_id: string | number | undefined,
+        message_id: number | undefined,
+        caption?: string,
+        reply_markup?: InlineKeyboardButton) {
+        if (!chat_id) {
+            throw new Error("the chat_id parameter is empty!");
+        }
+        if (!message_id) {
+            throw new Error("the message_id parameter is empty!");
+        }
 
+        try {
+
+            const formData = new FormData();
+            formData.append("chat_id", `${chat_id}`);
+            formData.append("message_id", `${message_id}`);
+            if (caption) {
+                formData.append("caption", `${caption}`);
+            }
+            if (reply_markup) {
+                formData.append("caption", `${JSON.stringify(reply_markup)}`);
+            }
+
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/editMessageText`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+
+    }
+    async deleteMessage(
+        chat_id: string | number | undefined,
+        message_id: number | undefined,
+    ) {
+        if (!chat_id) {
+            throw new Error("the chat_id parameter is empty!");
+        }
+        if (!message_id) {
+            throw new Error("the message_id parameter is empty!");
+        }
+
+        try {
+
+            const formData = new FormData();
+            formData.append("chat_id", `${chat_id}`);
+            formData.append("message_id", `${message_id}`);
+
+            const response = await fetch(
+                `https://tapi.bale.ai/bot${this.token}/deleteMessage`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+
+    }
     async editMessageReplyMarkup(
         chat_id: string | number | undefined,
         message_id: number | undefined,
