@@ -746,7 +746,7 @@ export class blBot {
             return {
                 ok: true,
                 status: res.status ?? null,
-                result: res.result as ChatMember[]
+                result: res.result.result as ChatMember[]
             };
         }
 
