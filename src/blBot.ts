@@ -23,6 +23,9 @@ import { InputSticker } from "./Entities/InputSticker";
 export class blBot {
     private token: string = "";
     private updateId: number = 0;
+    private concurrency = 5;
+    private running = 0;
+    private queue: any[] = [];
     constructor(token: string) {
         this.token = `${token}`;
         readUpdateId().then(x => this.updateId = Number(x)).then(() => { console.log(this.updateId) }).catch(x => { console.log("error") });
@@ -30,9 +33,31 @@ export class blBot {
 
     }
     private sleep(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(() => { }, ms));
+        return new Promise<void>((resolve) => setTimeout(resolve, ms));
     }
-    async Polling(main: (message: Update) => Promise<void>) {
+    async enqueue(update: any, main: (m: any) => Promise<void>) {
+        this.queue.push(update);
+        this.pump(main);
+    }
+
+    private async pump(main: (m: any) => Promise<void>) {
+
+        while (this.running <= this.concurrency && this.queue.length > 0) {
+            const item = this.queue.shift()!;
+            this.running++;
+
+            Promise.resolve()
+                .then(() => main(item))
+                .catch((err) => console.error("main error:", err))
+                .finally(() => {
+                    this.running--;
+                    this.pump(main);
+                });
+        }
+
+    }
+
+    async Polling(main: (message: any) => Promise<void>) {
         if (!this.updateId) this.updateId = 0;
 
         while (true) {
@@ -47,26 +72,19 @@ export class blBot {
 
                 if (json.ok && Array.isArray(json.result)) {
                     for (const item of json.result) {
-
-                        try {
-                            await main(item);
-                        } catch (error: any) {
-                            throw new Error(`an error occur:${error.message} }`);
-
-                        }
-
                         this.updateId = item.update_id + 1;
-
-
                         await saveUpdateId(String(this.updateId));
+
+                        await this.enqueue(item, main);
                     }
                 }
             } catch (error: any) {
                 console.error("Polling error:", error);
-                throw new Error(`an error occur:${error.message} }`);
+
+
             }
 
-            Promise.resolve(this.sleep(3000))
+            await this.sleep(5000);
         }
     }
     async testRegex(regex: string, text: string): Promise<Record<string, any>> {
