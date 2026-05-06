@@ -15,6 +15,7 @@ import { ActionType } from "./Entities/Action";
 import { ChatFullInfo } from "./Entities/ChatFullInfo";
 import { ChatMember } from "./Entities/ChatMember";
 import { InlineKeyboardButton } from "./Entities/InlineKeyboardButton";
+import { InputSticker } from "./Entities/InputSticker";
 
 
 
@@ -1131,4 +1132,128 @@ export class blBot {
         }
     }
 
+    async uploadStickerFile(user_id: string | number | undefined, sticker: InputFile) {
+        if (!user_id) {
+            throw new Error("the user_id parameter is empty!");
+        }
+        if (!sticker) {
+            throw new Error("the sticker parameter is empty!");
+        }
+        try {
+            const formData = new FormData();
+
+            formData.append("user_id", `${user_id}`);
+            if (sticker instanceof fs.ReadStream) {
+                const chunks: Buffer[] = [];
+                for await (const chunk of sticker) chunks.push(chunk);
+                const buffer = Buffer.concat(chunks);
+
+                const blob = new Blob([buffer]);
+                const fileName = path.basename(sticker.path.toString());
+                formData.append(`sticker`, blob, fileName);
+                console.log(`Appending content as stream: ${fileName}`);
+
+            }
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/uploadStickerFile`,
+                {
+                    method: "POST",
+                    body: formData
+                });
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
+
+
+    async createNewStickerSet(user_id: string | number | undefined, name: string | undefined, title: string | undefined, sticker: InputSticker[]) {
+
+        if (!user_id) {
+            throw new Error("the user_id parameter is empty!");
+        }
+
+        if (!name) {
+            throw new Error("the name parameter is empty!");
+        }
+
+        if (!title) {
+            throw new Error("the title parameter is empty!");
+        }
+
+        if (!sticker) {
+            throw new Error("the sticker parameter is empty!");
+        }
+
+        try {
+            const formData = new FormData();
+
+            formData.append("user_id", `${user_id}`);
+            formData.append("name", `${name}`);
+            formData.append("title", `${title}`);
+            formData.append("sticker", `${JSON.stringify(sticker)}`);
+
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/createNewStickerSet`,
+                {
+                    method: "POST",
+                    body: formData
+                });
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
+
+
+    async addStickerToSet(user_id: string | number | undefined, name: string | undefined, sticker: InputSticker[]) {
+
+        if (!user_id) {
+            throw new Error("the user_id parameter is empty!");
+        }
+
+        if (!name) {
+            throw new Error("the name parameter is empty!");
+        }
+
+
+        if (!sticker) {
+            throw new Error("the sticker parameter is empty!");
+        }
+
+        try {
+            const formData = new FormData();
+
+            formData.append("user_id", `${user_id}`);
+            formData.append("name", `${name}`);
+            formData.append("sticker", `${JSON.stringify(sticker)}`);
+            const response = await fetch(`https://tapi.bale.ai/${this.token}/addStickerToSet`,
+                {
+                    method: "POST",
+                    body: formData
+                });
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+
+            const responseJson = await response.json();
+
+            return { ok: true, status: response.status, result: responseJson };
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
+    }
 }
