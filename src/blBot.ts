@@ -16,12 +16,15 @@ import { ChatFullInfo } from "./Entities/ChatFullInfo";
 import { ChatMember } from "./Entities/ChatMember";
 import { InlineKeyboardButton } from "./Entities/InlineKeyboardButton";
 import { InputSticker } from "./Entities/InputSticker";
+import { ApiUrl } from "./Entities/base_url";
+import { WebhookInfo } from "./Entities/WebhookInfo";
 
 
 
 
 export class blBot {
     private token: string = "";
+    public base_url: ApiUrl = "tapi.bale.ai"
     private updateId: number = 0;
     private concurrency = 5;
     private running = 0;
@@ -65,7 +68,7 @@ export class blBot {
 
             try {
                 const res = await fetch(
-                    `https://tapi.bale.ai/bot${this.token}/getUpdates?offset=${this.updateId}&timeout=10`
+                    `https://${this.base_url}/bot${this.token}/getUpdates?offset=${this.updateId}&timeout=10`
                 );
 
                 const json: Result = await res.json();
@@ -75,7 +78,7 @@ export class blBot {
                         this.updateId = item.update_id + 1;
                         await saveUpdateId(String(this.updateId));
 
-                        await this.enqueue(item, main);
+                        await this.enqueue(item as Update, main);
                     }
                 }
             } catch (error: any) {
@@ -85,6 +88,72 @@ export class blBot {
             }
 
             await this.sleep(5000);
+        }
+    }
+
+    async setWebhook(url: string) {
+        if (!url) {
+            throw new Error("the url parameter is empty!");
+        }
+        try {
+            const response = await fetch(`https://${this.base_url}/bot${this.token}/setWebhook?url=${url}`)
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
+        }
+    }
+
+    async deleteWebhook() {
+
+        try {
+            const response = await fetch(`https://${this.base_url}/bot${this.token}/deleteWebhook`)
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
+        }
+    }
+    async getWebhookInfo() {
+
+        try {
+            const response = await fetch(`https://${this.base_url}/bot${this.token}/getWebhookInfo`)
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson: WebhookInfo = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
+        }
+    }
+
+    async WebhookInfo(url: string) {
+        if (!url) {
+            throw new Error("the url parameter is empty!");
+        }
+        try {
+            const response = await fetch(`https://${this.base_url}/bot${this.token}/WebhookInfo?url=${url}`)
+
+            if (!response.ok) {
+                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+            }
+            const responseJson = await response.json();
+            return { ok: true, status: response.status, result: `${responseJson}` }
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
     async testRegex(regex: string, text: string): Promise<Record<string, any>> {
@@ -99,7 +168,7 @@ export class blBot {
     // Test token of bot
     async getMe() {
         try {
-            const response = await fetch(`https://tapi.bale.ai/bot${this.token}/getMe`);
+            const response = await fetch(`https://${this.base_url}/bot${this.token}/getMe`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -134,7 +203,7 @@ export class blBot {
                 formData.append("reply_markup", `${JSON.stringify(reply_markup)}`)
             }
 
-            const response = await fetch(`https://tapi.bale.ai/bot${this.token}/sendMessage`,
+            const response = await fetch(`https://${this.base_url}/bot${this.token}/sendMessage`,
                 {
                     method: "POST",
                     body: formData
@@ -166,7 +235,7 @@ export class blBot {
                 throw new Error("the chat_id parameter is empty!");
             }
 
-            const response = await fetch(`https://tapi.bale.ai/bot${this.token}/forwardMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
+            const response = await fetch(`https://${this.base_url}/bot${this.token}/forwardMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
@@ -191,7 +260,7 @@ export class blBot {
                 throw new Error("the chat_id parameter is empty!");
             }
 
-            const response = await fetch(`https://tapi.bale.ai/bot${this.token}/copyMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
+            const response = await fetch(`https://${this.base_url}/bot${this.token}/copyMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
@@ -266,7 +335,7 @@ export class blBot {
             }
 
 
-            const response = await fetch(`https://tapi.bale.ai/bot${this.token}/${method}`, {
+            const response = await fetch(`https://${this.base_url}/bot${this.token}/${method}`, {
                 method: "POST",
                 body: formData,
             });
@@ -372,7 +441,7 @@ export class blBot {
                 formData.append("reply_to_message_id", String(reply_to_message_id));
             }
 
-            const response = await fetch(`https://tapi.bale.ai/bot${this.token}/sendMediaGroup`, { method: "POST", body: formData });
+            const response = await fetch(`https://${this.base_url}/bot${this.token}/sendMediaGroup`, { method: "POST", body: formData });
 
 
             if (!response.ok) {
@@ -420,7 +489,7 @@ export class blBot {
                 formData.append("reply_markup", JSON.stringify(reply_markup));
 
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/sendLocation`,
+                `https://${this.base_url}/bot${this.token}/sendLocation`,
                 {
                     method: "POST",
                     body: formData
@@ -472,7 +541,7 @@ export class blBot {
 
             console.log(JSON.stringify(reply_markup))
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/sendContact`,
+                `https://${this.base_url}/bot${this.token}/sendContact`,
                 {
                     method: "POST",
                     body: formData
@@ -503,7 +572,7 @@ export class blBot {
             formData.append("action", `${action}`);
 
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/sendChatAction`,
+                `https://${this.base_url}/bot${this.token}/sendChatAction`,
                 {
                     method: "POST",
                     body: formData
@@ -535,7 +604,7 @@ export class blBot {
             formData.append("file_id", `${file_id}`);
 
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/getFile`,
+                `https://${this.base_url}/bot${this.token}/getFile`,
                 {
                     method: "POST",
                     body: formData
@@ -560,7 +629,7 @@ export class blBot {
             }
 
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/${file_path}`,
+                `https://${this.base_url}/bot${this.token}/${file_path}`,
             );
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -586,7 +655,7 @@ export class blBot {
                 throw new Error("the delay_seconds parameter is empty!");
             }
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/askReview?user_id=${user_id}&delay_seconds=${delay_seconds}`,
+                `https://${this.base_url}/bot${this.token}/askReview?user_id=${user_id}&delay_seconds=${delay_seconds}`,
             );
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -609,7 +678,7 @@ export class blBot {
                 throw new Error("the user_id parameter is empty!");
             }
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/banChatMember?chat_id=${user_id}&user_id=${user_id}`,
+                `https://${this.base_url}/bot${this.token}/banChatMember?chat_id=${user_id}&user_id=${user_id}`,
             );
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -636,7 +705,7 @@ export class blBot {
                 throw new Error("the only_if_banned parameter is empty!");
             }
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/unbanChatMember?chat_id=${chat_id}&user_id=${user_id}&only_if_banned=${only_if_banned}`,
+                `https://${this.base_url}/bot${this.token}/unbanChatMember?chat_id=${chat_id}&user_id=${user_id}&only_if_banned=${only_if_banned}`,
             );
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -661,7 +730,7 @@ export class blBot {
             }
 
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/promoteChatMember?chat_id=${chat_id}&user_id=${user_id}&can_change_info=${can_change_info}&can_post_messages=${can_post_messages}&can_edit_messages=${can_edit_messages}&can_delete_messages=${can_delete_messages}&can_manage_video_chats=${can_manage_video_chats}&can_invite_users=${can_invite_users}&can_restrict_members=${can_restrict_members}`,
+                `https://${this.base_url}/bot${this.token}/promoteChatMember?chat_id=${chat_id}&user_id=${user_id}&can_change_info=${can_change_info}&can_post_messages=${can_post_messages}&can_edit_messages=${can_edit_messages}&can_delete_messages=${can_delete_messages}&can_manage_video_chats=${can_manage_video_chats}&can_invite_users=${can_invite_users}&can_restrict_members=${can_restrict_members}`,
             )
 
             if (!response.ok) {
@@ -697,7 +766,7 @@ export class blBot {
                 console.log(`Appending content as stream: ${fileName}`);
 
             }
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/setChatPhoto`,
+            const response = await fetch(`https://${this.base_url}/${this.token}/setChatPhoto`,
                 {
                     method: "POST",
                     body: formData
@@ -720,7 +789,7 @@ export class blBot {
             throw new Error("the chat_id parameter is empty!");
         }
         try {
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/${type}?chat_id=${chat_id}`);
+            const response = await fetch(`https://${this.base_url}/${this.token}/${type}?chat_id=${chat_id}`);
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
@@ -803,7 +872,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/getChatMember?chat_id=${chat_id}&user_id=${user_id}`);
+            const response = await fetch(`https://${this.base_url}/${this.token}/getChatMember?chat_id=${chat_id}&user_id=${user_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -827,7 +896,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/pinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
+            const response = await fetch(`https://${this.base_url}/${this.token}/pinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -851,7 +920,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/unPinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
+            const response = await fetch(`https://${this.base_url}/${this.token}/unPinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -873,7 +942,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/unpinAllChatMessages?chat_id=${chat_id}`);
+            const response = await fetch(`https://${this.base_url}/${this.token}/unpinAllChatMessages?chat_id=${chat_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -901,7 +970,7 @@ export class blBot {
 
 
         try {
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/setChatTitle?chat_id=${chat_id}&title=${title}`);
+            const response = await fetch(`https://${this.base_url}/${this.token}/setChatTitle?chat_id=${chat_id}&title=${title}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -920,7 +989,7 @@ export class blBot {
 
     async deleteChatPhoto(chat_id: string | number | undefined) {
         try {
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/deleteChatPhoto?chat_id=${chat_id}`);
+            const response = await fetch(`https://${this.base_url}/${this.token}/deleteChatPhoto?chat_id=${chat_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -938,7 +1007,7 @@ export class blBot {
 
     async createChatInviteLink(chat_id: string | number | undefined) {
         try {
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/createChatInviteLink?chat_id=${chat_id}`);
+            const response = await fetch(`https://${this.base_url}/${this.token}/createChatInviteLink?chat_id=${chat_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -957,7 +1026,7 @@ export class blBot {
 
     async revokeChatInviteLink(chat_id: string | number | undefined, invite_link: string | undefined) {
         try {
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/revokeChatInviteLink?chat_id=${chat_id}&invite_link=${invite_link}`);
+            const response = await fetch(`https://${this.base_url}/${this.token}/revokeChatInviteLink?chat_id=${chat_id}&invite_link=${invite_link}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -975,7 +1044,7 @@ export class blBot {
 
     async exportChatInviteLink(chat_id: string | number | undefined) {
         try {
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/exportChatInviteLink?chat_id=${chat_id}`);
+            const response = await fetch(`https://${this.base_url}/${this.token}/exportChatInviteLink?chat_id=${chat_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -1010,7 +1079,7 @@ export class blBot {
             formData.append("text", `${text}`);
 
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/editMessageText`,
+                `https://${this.base_url}/bot${this.token}/editMessageText`,
                 {
                     method: "POST",
                     body: formData
@@ -1054,7 +1123,7 @@ export class blBot {
             }
 
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/editMessageText`,
+                `https://${this.base_url}/bot${this.token}/editMessageText`,
                 {
                     method: "POST",
                     body: formData
@@ -1091,7 +1160,7 @@ export class blBot {
             formData.append("message_id", `${message_id}`);
 
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/deleteMessage`,
+                `https://${this.base_url}/bot${this.token}/deleteMessage`,
                 {
                     method: "POST",
                     body: formData
@@ -1129,7 +1198,7 @@ export class blBot {
             formData.append("message_id", `${message_id}`);
             formData.append("reply_markup", `${JSON.stringify(reply_markup)}`);
             const response = await fetch(
-                `https://tapi.bale.ai/bot${this.token}/editMessageReplyMarkup`,
+                `https://${this.base_url}/bot${this.token}/editMessageReplyMarkup`,
                 {
                     method: "POST",
                     body: formData
@@ -1172,7 +1241,7 @@ export class blBot {
                 console.log(`Appending content as stream: ${fileName}`);
 
             }
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/uploadStickerFile`,
+            const response = await fetch(`https://${this.base_url}/${this.token}/uploadStickerFile`,
                 {
                     method: "POST",
                     body: formData
@@ -1217,7 +1286,7 @@ export class blBot {
             formData.append("title", `${title}`);
             formData.append("sticker", `${JSON.stringify(sticker)}`);
 
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/createNewStickerSet`,
+            const response = await fetch(`https://${this.base_url}/${this.token}/createNewStickerSet`,
                 {
                     method: "POST",
                     body: formData
@@ -1257,7 +1326,7 @@ export class blBot {
             formData.append("user_id", `${user_id}`);
             formData.append("name", `${name}`);
             formData.append("sticker", `${JSON.stringify(sticker)}`);
-            const response = await fetch(`https://tapi.bale.ai/${this.token}/addStickerToSet`,
+            const response = await fetch(`https://${this.base_url}/${this.token}/addStickerToSet`,
                 {
                     method: "POST",
                     body: formData
