@@ -4,7 +4,6 @@ import { InputFile } from "./Entities/InputFile";
 import { ReplyKeyboardMarkup } from "./Entities/ReplyKeyboardMarkup";
 import { ReplyKeyboardRemove } from "./Entities/ReplyKeyboardRemove";
 import { Result } from "./Entities/Result";
-import { readUpdateId, saveUpdateId } from "./utils";
 import { InputMediaVideo } from "./Entities/InputMediaVideo";
 import { InputMediaAudio } from "./Entities/InputMediaAudio";
 import { InputMediaDocument } from "./Entities/InputMediaDocument";
@@ -31,7 +30,7 @@ export class blBot {
     private queue: any[] = [];
     constructor(token: string) {
         this.token = `${token}`;
-        readUpdateId().then(x => this.updateId = Number(x)).then(() => { console.log(this.updateId) }).catch(x => { console.log("error") });
+        // readUpdateId().then(x => this.updateId = Number(x)).then(() => { console.log(this.updateId) }).catch(x => { console.log("error") });
 
 
     }
@@ -76,7 +75,6 @@ export class blBot {
                 if (json.ok && Array.isArray(json.result)) {
                     for (const item of json.result) {
                         this.updateId = item.update_id + 1;
-                        await saveUpdateId(String(this.updateId));
 
                         await this.enqueue(item as Update, main);
                     }
