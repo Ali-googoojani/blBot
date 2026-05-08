@@ -1,0 +1,1 @@
+export type BaseUrl = "tapi.bale.ai" | "api.telegram.org";
