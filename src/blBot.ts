@@ -15,7 +15,7 @@ import { ChatFullInfo } from "./Entities/ChatFullInfo";
 import { ChatMember } from "./Entities/ChatMember";
 import { InlineKeyboardButton } from "./Entities/InlineKeyboardButton";
 import { InputSticker } from "./Entities/InputSticker";
-import { ApiUrl } from "./Entities/base_url";
+import { BaseUrl } from "./Entities/BaseUrl";
 import { WebhookInfo } from "./Entities/WebhookInfo";
 
 
@@ -23,28 +23,26 @@ import { WebhookInfo } from "./Entities/WebhookInfo";
 
 export class blBot {
     private token: string = "";
-    public base_url: ApiUrl = "tapi.bale.ai"
+    public baseUrl: BaseUrl = "tapi.bale.ai"
     private updateId: number = 0;
-    private concurrency = 5;
+    private conCurrency = 5;
     private running = 0;
-    private queue: any[] = [];
+    private queue: Update[] = [];
     constructor(token: string) {
         this.token = `${token}`;
-        // readUpdateId().then(x => this.updateId = Number(x)).then(() => { console.log(this.updateId) }).catch(x => { console.log("error") });
-
 
     }
     private sleep(ms: number): Promise<void> {
         return new Promise<void>((resolve) => setTimeout(resolve, ms));
     }
-    async enqueue(update: any, main: (m: any) => Promise<void>) {
+    async enqueue(update: Update, main: (message: Update) => Promise<void>) {
         this.queue.push(update);
         this.pump(main);
     }
 
-    private async pump(main: (m: any) => Promise<void>) {
+    private async pump(main: (message: Update) => Promise<void>) {
 
-        while (this.running <= this.concurrency && this.queue.length > 0) {
+        while (this.running <= this.conCurrency && this.queue.length > 0) {
             const item = this.queue.shift()!;
             this.running++;
 
@@ -59,15 +57,15 @@ export class blBot {
 
     }
 
-    async Polling(main: (message: any) => Promise<void>) {
+    async Polling(main: (message: Update) => Promise<void>) {
         if (!this.updateId) this.updateId = 0;
 
         while (true) {
-            console.log("Polling with offset:", this.updateId);
+            console.log("last updateId:", this.updateId);
 
             try {
                 const res = await fetch(
-                    `https://${this.base_url}/bot${this.token}/getUpdates?offset=${this.updateId}&timeout=10`
+                    `https://${this.baseUrl}/bot${this.token}/getUpdates?offset=${this.updateId}&timeout=10`
                 );
 
                 const json: Result = await res.json();
@@ -81,8 +79,6 @@ export class blBot {
                 }
             } catch (error: any) {
                 console.error("Polling error:", error);
-
-
             }
 
             await this.sleep(5000);
@@ -91,10 +87,10 @@ export class blBot {
 
     async setWebhook(url: string) {
         if (!url) {
-            throw new Error("the url parameter is empty!");
+            throw new Error("the url is empty!");
         }
         try {
-            const response = await fetch(`https://${this.base_url}/bot${this.token}/setWebhook?url=${url}`)
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/setWebhook?url=${url}`)
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -111,7 +107,7 @@ export class blBot {
     async deleteWebhook() {
 
         try {
-            const response = await fetch(`https://${this.base_url}/bot${this.token}/deleteWebhook`)
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/deleteWebhook`)
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
@@ -125,7 +121,7 @@ export class blBot {
     async getWebhookInfo() {
 
         try {
-            const response = await fetch(`https://${this.base_url}/bot${this.token}/getWebhookInfo`)
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/getWebhookInfo`)
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
@@ -142,7 +138,7 @@ export class blBot {
             throw new Error("the url parameter is empty!");
         }
         try {
-            const response = await fetch(`https://${this.base_url}/bot${this.token}/WebhookInfo?url=${url}`)
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/WebhookInfo?url=${url}`)
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -166,7 +162,7 @@ export class blBot {
     // Test token of bot
     async getMe() {
         try {
-            const response = await fetch(`https://${this.base_url}/bot${this.token}/getMe`);
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/getMe`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -181,7 +177,7 @@ export class blBot {
     }
 
     // Send a message via bot to specific chat or user
-    async sendMessage(chat_id: string | number | undefined, text: string, reply_to_message_id?: number, reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
+    async sendMessage(chat_id: string | number, text: string, reply_to_message_id?: number, reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
         try {
 
             if (!chat_id) {
@@ -201,7 +197,7 @@ export class blBot {
                 formData.append("reply_markup", `${JSON.stringify(reply_markup)}`)
             }
 
-            const response = await fetch(`https://${this.base_url}/bot${this.token}/sendMessage`,
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/sendMessage`,
                 {
                     method: "POST",
                     body: formData
@@ -233,7 +229,7 @@ export class blBot {
                 throw new Error("the chat_id parameter is empty!");
             }
 
-            const response = await fetch(`https://${this.base_url}/bot${this.token}/forwardMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/forwardMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
@@ -245,7 +241,7 @@ export class blBot {
         }
     }
 
-    async copyMessage(chat_id: string | number | undefined, from_chat_id: string | number, message_id: number) {
+    async copyMessage(chat_id: string | number, from_chat_id: string | number, message_id: number) {
         try {
 
             if (!chat_id) {
@@ -258,7 +254,7 @@ export class blBot {
                 throw new Error("the chat_id parameter is empty!");
             }
 
-            const response = await fetch(`https://${this.base_url}/bot${this.token}/copyMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/copyMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
@@ -272,8 +268,8 @@ export class blBot {
     }
     // Send Photo file using string or InputFile
     private async sendContent(
-        chat_id: string | number | undefined,
-        from_chat_id: string | number | undefined,
+        chat_id: string | number,
+        from_chat_id: string | number,
         content: InputFile | string,
         content_type: string,
         caption: string = "",
@@ -333,7 +329,7 @@ export class blBot {
             }
 
 
-            const response = await fetch(`https://${this.base_url}/bot${this.token}/${method}`, {
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/${method}`, {
                 method: "POST",
                 body: formData,
             });
@@ -354,70 +350,70 @@ export class blBot {
         }
     }
     async sendPhoto(
-        chatId: string | number | undefined,
-        from_chat_id: string | number | undefined,
+        chat_id: string | number,
+        from_chat_id: string | number,
         photo: InputFile | string,
         caption?: string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        const res = await this.sendContent(chatId, from_chat_id, photo, "photo", caption, reply_to_message_id, reply_markup, "sendPhoto");
+        const res = await this.sendContent(chat_id, from_chat_id, photo, "photo", caption, reply_to_message_id, reply_markup, "sendPhoto");
         return res;
     }
     async sendAudio(
-        chatId: string | number | undefined,
-        from_chat_id: string | number | undefined,
+        chat_id: string | number,
+        from_chat_id: string | number,
         Audio: InputFile | string,
         caption?: string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        const res = await this.sendContent(chatId, from_chat_id, Audio, "audio", caption, reply_to_message_id, reply_markup, "sendAudio");
+        const res = await this.sendContent(chat_id, from_chat_id, Audio, "audio", caption, reply_to_message_id, reply_markup, "sendAudio");
         return res
     }
 
     async sendDocument(
-        chatId: string | number | undefined,
-        from_chat_id: string | number | undefined,
+        chat_id: string | number,
+        from_chat_id: string | number,
         document: InputFile | string,
         caption?: string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        const res = await this.sendContent(chatId, from_chat_id, document, "document", caption, reply_to_message_id, reply_markup, "sendDocument");
+        const res = await this.sendContent(chat_id, from_chat_id, document, "document", caption, reply_to_message_id, reply_markup, "sendDocument");
         return res;
     }
 
     async sendVideo(
-        chatId: string | number | undefined,
-        from_chat_id: string | number | undefined,
+        chat_id: string | number,
+        from_chat_id: string | number,
         video: InputFile | string,
         caption?: string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        const res = await this.sendContent(chatId, from_chat_id, video, "video", caption, reply_to_message_id, reply_markup, "sendVideo");
+        const res = await this.sendContent(chat_id, from_chat_id, video, "video", caption, reply_to_message_id, reply_markup, "sendVideo");
         return res;
     }
     async sendAnimation(
-        chatId: string | number | undefined,
-        from_chat_id: string | number | undefined,
+        chat_id: string | number,
+        from_chat_id: string | number,
         animation: InputFile | string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        const res = await this.sendContent(chatId, from_chat_id, animation, "animation", "", reply_to_message_id, reply_markup, "sendAnimation");
+        const res = await this.sendContent(chat_id, from_chat_id, animation, "animation", "", reply_to_message_id, reply_markup, "sendAnimation");
         return res;
     }
 
     async sendVoice(
-        chatId: string | number | undefined,
-        from_chat_id: string | number | undefined,
+        chat_id: string | number,
+        from_chat_id: string | number,
         voice: InputFile | string,
         caption?: string,
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
-        const res = await this.sendContent(chatId, from_chat_id, voice, "voice", caption, reply_to_message_id, reply_markup, "sendVoice");
+        const res = await this.sendContent(chat_id, from_chat_id, voice, "voice", caption, reply_to_message_id, reply_markup, "sendVoice");
         return res;
     }
 
     async sendMediaGroup(
-        chat_id: string | number | undefined,
+        chat_id: string | number,
         media: Array<InputMediaVideo | InputMediaAudio | InputMediaDocument | InputMediaPhoto>,
         reply_to_message_id?: number
     ) {
@@ -439,7 +435,7 @@ export class blBot {
                 formData.append("reply_to_message_id", String(reply_to_message_id));
             }
 
-            const response = await fetch(`https://${this.base_url}/bot${this.token}/sendMediaGroup`, { method: "POST", body: formData });
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/sendMediaGroup`, { method: "POST", body: formData });
 
 
             if (!response.ok) {
@@ -487,7 +483,7 @@ export class blBot {
                 formData.append("reply_markup", JSON.stringify(reply_markup));
 
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/sendLocation`,
+                `https://${this.baseUrl}/bot${this.token}/sendLocation`,
                 {
                     method: "POST",
                     body: formData
@@ -539,7 +535,7 @@ export class blBot {
 
             console.log(JSON.stringify(reply_markup))
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/sendContact`,
+                `https://${this.baseUrl}/bot${this.token}/sendContact`,
                 {
                     method: "POST",
                     body: formData
@@ -558,7 +554,7 @@ export class blBot {
         }
     }
 
-    async sendChatAction(chat_id: string | number | undefined, action: ActionType) {
+    async sendChatAction(chat_id: string | number, action: ActionType) {
         try {
 
             if (!chat_id) {
@@ -570,7 +566,7 @@ export class blBot {
             formData.append("action", `${action}`);
 
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/sendChatAction`,
+                `https://${this.baseUrl}/bot${this.token}/sendChatAction`,
                 {
                     method: "POST",
                     body: formData
@@ -589,7 +585,7 @@ export class blBot {
         }
     }
 
-    /* this method return something like this json
+    /* this method return something like this
 
     {"ok":true,"result":{"file_id":"213---1538:782065596---6566275:0:88d---66831f3488","file_unique_id":"213---1538:782065596---6566275:0:88d---66831f3488","file_size":85,"file_path":"213---1538:782065596---6566275:0:88d---66831f3488"}}
     */
@@ -602,7 +598,7 @@ export class blBot {
             formData.append("file_id", `${file_id}`);
 
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/getFile`,
+                `https://${this.baseUrl}/bot${this.token}/getFile`,
                 {
                     method: "POST",
                     body: formData
@@ -627,33 +623,40 @@ export class blBot {
             }
 
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/${file_path}`,
+                `https://${this.baseUrl}/bot${this.token}/${file_path}`
             );
+
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, status: response.status, message: response.statusText };
             }
+
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
             fs.writeFileSync(output_path, buffer);
-            const responseJson = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
+
+            return {
+                ok: true,
+                status: response.status,
+                message: "file downloaded successfully",
+                path: output_path
+            };
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            return { ok: false, status: 500, message: `an error occurred: ${error.message}` };
         }
     }
 
     async askReview(user_id: number, delay_seconds: number) {
         try {
             if (!user_id) {
-                throw new Error("the user_id parameter is empty!");
+                throw new Error("the user_id is empty!");
             }
             if (!delay_seconds) {
-                throw new Error("the delay_seconds parameter is empty!");
+                throw new Error("the delay_seconds is empty!");
             }
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/askReview?user_id=${user_id}&delay_seconds=${delay_seconds}`,
+                `https://${this.baseUrl}/bot${this.token}/askReview?user_id=${user_id}&delay_seconds=${delay_seconds}`,
             );
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -676,7 +679,7 @@ export class blBot {
                 throw new Error("the user_id parameter is empty!");
             }
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/banChatMember?chat_id=${user_id}&user_id=${user_id}`,
+                `https://${this.baseUrl}/bot${this.token}/banChatMember?chat_id=${user_id}&user_id=${user_id}`,
             );
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -703,7 +706,7 @@ export class blBot {
                 throw new Error("the only_if_banned parameter is empty!");
             }
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/unbanChatMember?chat_id=${chat_id}&user_id=${user_id}&only_if_banned=${only_if_banned}`,
+                `https://${this.baseUrl}/bot${this.token}/unbanChatMember?chat_id=${chat_id}&user_id=${user_id}&only_if_banned=${only_if_banned}`,
             );
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -728,7 +731,7 @@ export class blBot {
             }
 
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/promoteChatMember?chat_id=${chat_id}&user_id=${user_id}&can_change_info=${can_change_info}&can_post_messages=${can_post_messages}&can_edit_messages=${can_edit_messages}&can_delete_messages=${can_delete_messages}&can_manage_video_chats=${can_manage_video_chats}&can_invite_users=${can_invite_users}&can_restrict_members=${can_restrict_members}`,
+                `https://${this.baseUrl}/bot${this.token}/promoteChatMember?chat_id=${chat_id}&user_id=${user_id}&can_change_info=${can_change_info}&can_post_messages=${can_post_messages}&can_edit_messages=${can_edit_messages}&can_delete_messages=${can_delete_messages}&can_manage_video_chats=${can_manage_video_chats}&can_invite_users=${can_invite_users}&can_restrict_members=${can_restrict_members}`,
             )
 
             if (!response.ok) {
@@ -742,7 +745,7 @@ export class blBot {
             throw new Error(`an error occur: ${error.message}`);
         }
     }
-    async setChatPhoto(chat_id: string | number | undefined, photo: InputFile) {
+    async setChatPhoto(chat_id: string | number, photo: InputFile) {
         if (!chat_id) {
             throw new Error("the chat_id parameter is empty!");
         }
@@ -764,7 +767,7 @@ export class blBot {
                 console.log(`Appending content as stream: ${fileName}`);
 
             }
-            const response = await fetch(`https://${this.base_url}/${this.token}/setChatPhoto`,
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/setChatPhoto`,
                 {
                     method: "POST",
                     body: formData
@@ -782,12 +785,12 @@ export class blBot {
         }
 
     }
-    async FunctionsWithChatIdOnly(chat_id: string | number | undefined, type: string | undefined) {
+    async FunctionsWithChatIdOnly(chat_id: string | number, type: string) {
         if (!chat_id) {
             throw new Error("the chat_id parameter is empty!");
         }
         try {
-            const response = await fetch(`https://${this.base_url}/${this.token}/${type}?chat_id=${chat_id}`);
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/${type}?chat_id=${chat_id}`);
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
             }
@@ -802,12 +805,12 @@ export class blBot {
     }
 
 
-    async leaveChat(chat_id: string | number | undefined) {
+    async leaveChat(chat_id: string | number) {
         const res = await this.FunctionsWithChatIdOnly(chat_id, "leaveChat");
         return res;
     }
 
-    async getChat(chat_id: string | number | undefined) {
+    async getChat(chat_id: string | number) {
         const res = await this.FunctionsWithChatIdOnly(chat_id, "getChat");
         if (res?.ok) {
             return {
@@ -827,7 +830,7 @@ export class blBot {
 
 
 
-    async getChatAdministrators(chat_id: string | number | undefined) {
+    async getChatAdministrators(chat_id: string | number) {
         const res = await this.FunctionsWithChatIdOnly(chat_id, "getChatAdministrators");
         if (res.ok) {
             return {
@@ -844,7 +847,7 @@ export class blBot {
         };
     }
 
-    async getChatMembersCount(chat_id: string | number | undefined) {
+    async getChatMembersCount(chat_id: string | number) {
         const res = await this.FunctionsWithChatIdOnly(chat_id, "getChatMembersCount");
         if (res?.ok) {
             return {
@@ -861,7 +864,7 @@ export class blBot {
         };
     }
 
-    async getChatMember(chat_id: string | number | undefined, user_id: string | number | undefined) {
+    async getChatMember(chat_id: string | number, user_id: string | number) {
         if (!chat_id) {
             throw new Error("the chat_id parameter is empty!");
         }
@@ -870,7 +873,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://${this.base_url}/${this.token}/getChatMember?chat_id=${chat_id}&user_id=${user_id}`);
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/getChatMember?chat_id=${chat_id}&user_id=${user_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -885,7 +888,7 @@ export class blBot {
             throw new Error(`an error occur: ${error.message}`)
         }
     }
-    async pinChatMessage(chat_id: string | number | undefined, message_id: string | number | undefined) {
+    async pinChatMessage(chat_id: string | number, message_id: number) {
         if (!chat_id) {
             throw new Error("the chat_id parameter is empty!");
         }
@@ -894,7 +897,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://${this.base_url}/${this.token}/pinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/pinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -909,7 +912,7 @@ export class blBot {
             throw new Error(`an error occur: ${error.message}`)
         }
     }
-    async unPinChatMessage(chat_id: string | number | undefined, message_id: string | number | undefined) {
+    async unPinChatMessage(chat_id: string | number, message_id: number) {
         if (!chat_id) {
             throw new Error("the chat_id parameter is empty!");
         }
@@ -918,7 +921,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://${this.base_url}/${this.token}/unPinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/unPinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -934,13 +937,13 @@ export class blBot {
         }
     }
 
-    async unpinAllChatMessages(chat_id: string | number | undefined) {
+    async unpinAllChatMessages(chat_id: string | number) {
         if (!chat_id) {
             throw new Error("the chat_id parameter is empty!");
         }
 
         try {
-            const response = await fetch(`https://${this.base_url}/${this.token}/unpinAllChatMessages?chat_id=${chat_id}`);
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/unpinAllChatMessages?chat_id=${chat_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -956,7 +959,7 @@ export class blBot {
         }
     }
 
-    async setChatTitle(chat_id: string | number | undefined, title: string | undefined) {
+    async setChatTitle(chat_id: string | number, title: string) {
 
         if (!chat_id) {
             throw new Error("the chat_id parameter is empty!");
@@ -968,7 +971,7 @@ export class blBot {
 
 
         try {
-            const response = await fetch(`https://${this.base_url}/${this.token}/setChatTitle?chat_id=${chat_id}&title=${title}`);
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/setChatTitle?chat_id=${chat_id}&title=${title}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -985,9 +988,9 @@ export class blBot {
     }
 
 
-    async deleteChatPhoto(chat_id: string | number | undefined) {
+    async deleteChatPhoto(chat_id: string | number) {
         try {
-            const response = await fetch(`https://${this.base_url}/${this.token}/deleteChatPhoto?chat_id=${chat_id}`);
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/deleteChatPhoto?chat_id=${chat_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -1003,9 +1006,9 @@ export class blBot {
         }
     }
 
-    async createChatInviteLink(chat_id: string | number | undefined) {
+    async createChatInviteLink(chat_id: string | number) {
         try {
-            const response = await fetch(`https://${this.base_url}/${this.token}/createChatInviteLink?chat_id=${chat_id}`);
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/createChatInviteLink?chat_id=${chat_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -1022,9 +1025,9 @@ export class blBot {
     }
 
 
-    async revokeChatInviteLink(chat_id: string | number | undefined, invite_link: string | undefined) {
+    async revokeChatInviteLink(chat_id: string | number, invite_link: string) {
         try {
-            const response = await fetch(`https://${this.base_url}/${this.token}/revokeChatInviteLink?chat_id=${chat_id}&invite_link=${invite_link}`);
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/revokeChatInviteLink?chat_id=${chat_id}&invite_link=${invite_link}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -1040,9 +1043,9 @@ export class blBot {
         }
     }
 
-    async exportChatInviteLink(chat_id: string | number | undefined) {
+    async exportChatInviteLink(chat_id: string | number) {
         try {
-            const response = await fetch(`https://${this.base_url}/${this.token}/exportChatInviteLink?chat_id=${chat_id}`);
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/exportChatInviteLink?chat_id=${chat_id}`);
 
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -1058,8 +1061,8 @@ export class blBot {
         }
     }
     async editMessageText(
-        chat_id: string | number | undefined,
-        message_id: number | undefined,
+        chat_id: string | number,
+        message_id: number,
         text: string) {
         try {
             if (!chat_id) {
@@ -1077,7 +1080,7 @@ export class blBot {
             formData.append("text", `${text}`);
 
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/editMessageText`,
+                `https://${this.baseUrl}/bot${this.token}/editMessageText`,
                 {
                     method: "POST",
                     body: formData
@@ -1097,8 +1100,8 @@ export class blBot {
 
     }
     async editMessageCaption(
-        chat_id: string | number | undefined,
-        message_id: number | undefined,
+        chat_id: string | number,
+        message_id: number,
         caption?: string,
         reply_markup?: InlineKeyboardButton) {
         if (!chat_id) {
@@ -1121,7 +1124,7 @@ export class blBot {
             }
 
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/editMessageText`,
+                `https://${this.baseUrl}/bot${this.token}/editMessageText`,
                 {
                     method: "POST",
                     body: formData
@@ -1141,8 +1144,8 @@ export class blBot {
 
     }
     async deleteMessage(
-        chat_id: string | number | undefined,
-        message_id: number | undefined,
+        chat_id: string | number,
+        message_id: number,
     ) {
         if (!chat_id) {
             throw new Error("the chat_id parameter is empty!");
@@ -1158,7 +1161,7 @@ export class blBot {
             formData.append("message_id", `${message_id}`);
 
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/deleteMessage`,
+                `https://${this.baseUrl}/bot${this.token}/deleteMessage`,
                 {
                     method: "POST",
                     body: formData
@@ -1178,8 +1181,8 @@ export class blBot {
 
     }
     async editMessageReplyMarkup(
-        chat_id: string | number | undefined,
-        message_id: number | undefined,
+        chat_id: string | number,
+        message_id: number,
         reply_markup: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
         try {
             if (!chat_id) {
@@ -1196,7 +1199,7 @@ export class blBot {
             formData.append("message_id", `${message_id}`);
             formData.append("reply_markup", `${JSON.stringify(reply_markup)}`);
             const response = await fetch(
-                `https://${this.base_url}/bot${this.token}/editMessageReplyMarkup`,
+                `https://${this.baseUrl}/bot${this.token}/editMessageReplyMarkup`,
                 {
                     method: "POST",
                     body: formData
@@ -1217,7 +1220,7 @@ export class blBot {
         }
     }
 
-    async uploadStickerFile(user_id: string | number | undefined, sticker: InputFile) {
+    async uploadStickerFile(user_id: string | number, sticker: InputFile) {
         if (!user_id) {
             throw new Error("the user_id parameter is empty!");
         }
@@ -1239,7 +1242,7 @@ export class blBot {
                 console.log(`Appending content as stream: ${fileName}`);
 
             }
-            const response = await fetch(`https://${this.base_url}/${this.token}/uploadStickerFile`,
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/uploadStickerFile`,
                 {
                     method: "POST",
                     body: formData
@@ -1258,7 +1261,7 @@ export class blBot {
     }
 
 
-    async createNewStickerSet(user_id: string | number | undefined, name: string | undefined, title: string | undefined, sticker: InputSticker[]) {
+    async createNewStickerSet(user_id: string | number, name: string, title: string, sticker: InputSticker[]) {
 
         if (!user_id) {
             throw new Error("the user_id parameter is empty!");
@@ -1284,7 +1287,7 @@ export class blBot {
             formData.append("title", `${title}`);
             formData.append("sticker", `${JSON.stringify(sticker)}`);
 
-            const response = await fetch(`https://${this.base_url}/${this.token}/createNewStickerSet`,
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/createNewStickerSet`,
                 {
                     method: "POST",
                     body: formData
@@ -1303,7 +1306,7 @@ export class blBot {
     }
 
 
-    async addStickerToSet(user_id: string | number | undefined, name: string | undefined, sticker: InputSticker[]) {
+    async addStickerToSet(user_id: string | number, name: string, sticker: InputSticker[]) {
 
         if (!user_id) {
             throw new Error("the user_id parameter is empty!");
@@ -1324,7 +1327,7 @@ export class blBot {
             formData.append("user_id", `${user_id}`);
             formData.append("name", `${name}`);
             formData.append("sticker", `${JSON.stringify(sticker)}`);
-            const response = await fetch(`https://${this.base_url}/${this.token}/addStickerToSet`,
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/addStickerToSet`,
                 {
                     method: "POST",
                     body: formData
