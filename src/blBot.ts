@@ -21,7 +21,7 @@ import { WebhookInfo } from "./Entities/WebhookInfo";
 
 
 
-export class blBot {
+class blBot {
     private token: string = "";
     public baseUrl: BaseUrl = "tapi.bale.ai"
     private updateId: number = 0;
@@ -1346,3 +1346,6 @@ export class blBot {
         }
     }
 }
+
+
+export default blBot;
