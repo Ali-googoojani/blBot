@@ -135,7 +135,7 @@ export class blBot {
 
     async WebhookInfo(url: string) {
         if (!url) {
-            throw new Error("the url parameter is empty!");
+            throw new Error("the url is empty!");
         }
         try {
             const response = await fetch(`https://${this.baseUrl}/bot${this.token}/WebhookInfo?url=${url}`)
@@ -178,15 +178,14 @@ export class blBot {
 
     // Send a message via bot to specific chat or user
     async sendMessage(chat_id: string | number, text: string, reply_to_message_id?: number, reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!text) {
+            throw new Error("the chat_id is empty!");
+        }
+
         try {
-
-            if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!text) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-
             const formData = new FormData();
             formData.append("chat_id", `${chat_id}`);
             formData.append("text", `${text}`);
@@ -217,18 +216,16 @@ export class blBot {
     }
 
     async forwardMessage(chat_id: string | number, from_chat_id: string | number, message_id: number) {
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!from_chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!message_id) {
+            throw new Error("the chat_id is empty!");
+        }
         try {
-
-            if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!from_chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!message_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-
             const response = await fetch(`https://${this.baseUrl}/bot${this.token}/forwardMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -242,18 +239,17 @@ export class blBot {
     }
 
     async copyMessage(chat_id: string | number, from_chat_id: string | number, message_id: number) {
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!from_chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!message_id) {
+            throw new Error("the chat_id is empty!");
+        }
+
         try {
-
-            if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!from_chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!message_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-
             const response = await fetch(`https://${this.baseUrl}/bot${this.token}/copyMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
@@ -277,22 +273,22 @@ export class blBot {
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove,
         method?: string
     ) {
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!from_chat_id) {
+            throw new Error("the from_chat_id is empty!");
+        }
+        if (!content) {
+            throw new Error("the content is empty!");
+        }
+        if (!content_type) {
+            throw new Error("the content_type is empty!");
+        }
+        if (!method) {
+            throw new Error("the method is empty");
+        }
         try {
-            if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!from_chat_id) {
-                throw new Error("the from_chat_id parameter is empty!");
-            }
-            if (!content) {
-                throw new Error("the content parameter is empty!");
-            }
-            if (!content_type) {
-                throw new Error("the content_type parameter is empty!");
-            }
-            if (!method) {
-                throw new Error("the method argument is empty");
-            }
             const formData = new FormData();
 
             formData.append("chat_id", String(chat_id));
@@ -417,15 +413,13 @@ export class blBot {
         media: Array<InputMediaVideo | InputMediaAudio | InputMediaDocument | InputMediaPhoto>,
         reply_to_message_id?: number
     ) {
-
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!media) {
+            throw new Error("the media is empty!");
+        }
         try {
-
-            if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!media) {
-                throw new Error("the media parameter is empty!");
-            }
             const formData = new FormData();
 
             formData.append("chat_id", String(chat_id));
@@ -458,17 +452,18 @@ export class blBot {
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove
     ) {
+        if (chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (latitude) {
+            throw new Error("the latitude is empty!");
+        }
+        if (longitude) {
+            throw new Error("the longitude is empty!");
+        }
         try {
             const formData = new FormData();
-            if (chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (latitude) {
-                throw new Error("the latitude parameter is empty!");
-            }
-            if (longitude) {
-                throw new Error("the longitude parameter is empty!");
-            }
+
             formData.append("chat_id", `${chat_id}`);
             formData.append("latitude", `${latitude}`);
             formData.append("longitude", `${longitude}`);
@@ -509,17 +504,18 @@ export class blBot {
         reply_to_message_id?: number,
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove
     ) {
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!phone_number) {
+            throw new Error("the phone_number is empty!");
+        }
+        if (!first_name) {
+            throw new Error("the first_name is empty!");
+        }
         try {
             const formData = new FormData();
-            if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!phone_number) {
-                throw new Error("the phone_number parameter is empty!");
-            }
-            if (!first_name) {
-                throw new Error("the first_name parameter is empty!");
-            }
+
             formData.append("chat_id", `${chat_id}`);
             formData.append("phone_number", `${phone_number}`);
             formData.append("first_name", `${first_name}`);
@@ -555,12 +551,13 @@ export class blBot {
     }
 
     async sendChatAction(chat_id: string | number, action: ActionType) {
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!action) {
+            throw new Error("the action is empty!");
+        }
         try {
-
-            if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-
             const formData = new FormData();
             formData.append("chat_id", `${chat_id}`);
             formData.append("action", `${action}`);
@@ -590,10 +587,11 @@ export class blBot {
     {"ok":true,"result":{"file_id":"213---1538:782065596---6566275:0:88d---66831f3488","file_unique_id":"213---1538:782065596---6566275:0:88d---66831f3488","file_size":85,"file_path":"213---1538:782065596---6566275:0:88d---66831f3488"}}
     */
     async getFile(file_id: string) {
+        if (!file_id) {
+            throw new Error("the file_id is empty!");
+        }
         try {
-            if (!file_id) {
-                throw new Error("the file_id parameter is empty!");
-            }
+
             const formData = new FormData();
             formData.append("file_id", `${file_id}`);
 
@@ -617,10 +615,14 @@ export class blBot {
 
     //-i think this method does not support by bale 
     async downloadFile(output_path: string, file_path: string) {
+        if (!file_path) {
+            throw new Error("the file_path is empty!");
+        }
+        if (!output_path) {
+            throw new Error("the output_path is empty!");
+        }
         try {
-            if (!file_path) {
-                throw new Error("the file_path parameter is empty!");
-            }
+
 
             const response = await fetch(
                 `https://${this.baseUrl}/bot${this.token}/${file_path}`
@@ -648,13 +650,13 @@ export class blBot {
     }
 
     async askReview(user_id: number, delay_seconds: number) {
+        if (!user_id) {
+            throw new Error("the user_id is empty!");
+        }
+        if (!delay_seconds) {
+            throw new Error("the delay_seconds is empty!");
+        }
         try {
-            if (!user_id) {
-                throw new Error("the user_id is empty!");
-            }
-            if (!delay_seconds) {
-                throw new Error("the delay_seconds is empty!");
-            }
             const response = await fetch(
                 `https://${this.baseUrl}/bot${this.token}/askReview?user_id=${user_id}&delay_seconds=${delay_seconds}`,
             );
@@ -671,13 +673,13 @@ export class blBot {
     }
 
     async banChatMember(chat_id: string | number, user_id: number) {
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!user_id) {
+            throw new Error("the user_id is empty!");
+        }
         try {
-            if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!user_id) {
-                throw new Error("the user_id parameter is empty!");
-            }
             const response = await fetch(
                 `https://${this.baseUrl}/bot${this.token}/banChatMember?chat_id=${user_id}&user_id=${user_id}`,
             );
@@ -695,16 +697,16 @@ export class blBot {
 
 
     async unbanChatMember(chat_id: string | number, user_id: number, only_if_banned: boolean) {
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!user_id) {
+            throw new Error("the user_id is empty!");
+        }
+        if (!only_if_banned) {
+            throw new Error("the only_if_banned is empty!");
+        }
         try {
-            if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!user_id) {
-                throw new Error("the user_id parameter is empty!");
-            }
-            if (!only_if_banned) {
-                throw new Error("the only_if_banned parameter is empty!");
-            }
             const response = await fetch(
                 `https://${this.baseUrl}/bot${this.token}/unbanChatMember?chat_id=${chat_id}&user_id=${user_id}&only_if_banned=${only_if_banned}`,
             );
@@ -722,14 +724,13 @@ export class blBot {
 
 
     async promoteChatMember(chat_id: string | number, user_id: number, can_change_info?: boolean, can_post_messages?: boolean, can_edit_messages?: boolean, can_delete_messages?: boolean, can_manage_video_chats?: boolean, can_invite_users?: boolean, can_restrict_members?: boolean) {
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!user_id) {
+            throw new Error("the user_id is empty!");
+        }
         try {
-            if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
-            }
-            if (!user_id) {
-                throw new Error("the user_id parameter is empty!");
-            }
-
             const response = await fetch(
                 `https://${this.baseUrl}/bot${this.token}/promoteChatMember?chat_id=${chat_id}&user_id=${user_id}&can_change_info=${can_change_info}&can_post_messages=${can_post_messages}&can_edit_messages=${can_edit_messages}&can_delete_messages=${can_delete_messages}&can_manage_video_chats=${can_manage_video_chats}&can_invite_users=${can_invite_users}&can_restrict_members=${can_restrict_members}`,
             )
@@ -747,10 +748,10 @@ export class blBot {
     }
     async setChatPhoto(chat_id: string | number, photo: InputFile) {
         if (!chat_id) {
-            throw new Error("the chat_id parameter is empty!");
+            throw new Error("the chat_id is empty!");
         }
         if (!photo) {
-            throw new Error("the photo parameter is empty!");
+            throw new Error("the photo is empty!");
         }
         try {
             const formData = new FormData();
@@ -787,7 +788,7 @@ export class blBot {
     }
     async FunctionsWithChatIdOnly(chat_id: string | number, type: string) {
         if (!chat_id) {
-            throw new Error("the chat_id parameter is empty!");
+            throw new Error("the chat_id is empty!");
         }
         try {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/${type}?chat_id=${chat_id}`);
@@ -866,10 +867,10 @@ export class blBot {
 
     async getChatMember(chat_id: string | number, user_id: string | number) {
         if (!chat_id) {
-            throw new Error("the chat_id parameter is empty!");
+            throw new Error("the chat_id is empty!");
         }
         if (!user_id) {
-            throw new Error("the user_id parameter is empty!");
+            throw new Error("the user_id is empty!");
         }
 
         try {
@@ -890,10 +891,10 @@ export class blBot {
     }
     async pinChatMessage(chat_id: string | number, message_id: number) {
         if (!chat_id) {
-            throw new Error("the chat_id parameter is empty!");
+            throw new Error("the chat_id is empty!");
         }
         if (!message_id) {
-            throw new Error("the message_id parameter is empty!");
+            throw new Error("the message_id is empty!");
         }
 
         try {
@@ -914,10 +915,10 @@ export class blBot {
     }
     async unPinChatMessage(chat_id: string | number, message_id: number) {
         if (!chat_id) {
-            throw new Error("the chat_id parameter is empty!");
+            throw new Error("the chat_id is empty!");
         }
         if (!message_id) {
-            throw new Error("the message_id parameter is empty!");
+            throw new Error("the message_id is empty!");
         }
 
         try {
@@ -939,7 +940,7 @@ export class blBot {
 
     async unpinAllChatMessages(chat_id: string | number) {
         if (!chat_id) {
-            throw new Error("the chat_id parameter is empty!");
+            throw new Error("the chat_id is empty!");
         }
 
         try {
@@ -962,10 +963,10 @@ export class blBot {
     async setChatTitle(chat_id: string | number, title: string) {
 
         if (!chat_id) {
-            throw new Error("the chat_id parameter is empty!");
+            throw new Error("the chat_id is empty!");
         }
         if (!title) {
-            throw new Error("the title parameter is empty!");
+            throw new Error("the title is empty!");
         }
 
 
@@ -1066,13 +1067,13 @@ export class blBot {
         text: string) {
         try {
             if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
+                throw new Error("the chat_id is empty!");
             }
             if (!message_id) {
-                throw new Error("the message_id parameter is empty!");
+                throw new Error("the message_id is empty!");
             }
             if (!text) {
-                throw new Error("the text parameter is empty!");
+                throw new Error("the text is empty!");
             }
             const formData = new FormData();
             formData.append("chat_id", `${chat_id}`);
@@ -1105,10 +1106,10 @@ export class blBot {
         caption?: string,
         reply_markup?: InlineKeyboardButton) {
         if (!chat_id) {
-            throw new Error("the chat_id parameter is empty!");
+            throw new Error("the chat_id is empty!");
         }
         if (!message_id) {
-            throw new Error("the message_id parameter is empty!");
+            throw new Error("the message_id is empty!");
         }
 
         try {
@@ -1148,10 +1149,10 @@ export class blBot {
         message_id: number,
     ) {
         if (!chat_id) {
-            throw new Error("the chat_id parameter is empty!");
+            throw new Error("the chat_id is empty!");
         }
         if (!message_id) {
-            throw new Error("the message_id parameter is empty!");
+            throw new Error("the message_id is empty!");
         }
 
         try {
@@ -1186,13 +1187,13 @@ export class blBot {
         reply_markup: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
         try {
             if (!chat_id) {
-                throw new Error("the chat_id parameter is empty!");
+                throw new Error("the chat_id is empty!");
             }
             if (!message_id) {
-                throw new Error("the user_id parameter is empty!");
+                throw new Error("the user_id is empty!");
             }
             if (!reply_markup) {
-                throw new Error("the reply_markup parameter is empty!");
+                throw new Error("the reply_markup is empty!");
             }
             const formData = new FormData();
             formData.append("chat_id", `${chat_id}`);
@@ -1222,10 +1223,10 @@ export class blBot {
 
     async uploadStickerFile(user_id: string | number, sticker: InputFile) {
         if (!user_id) {
-            throw new Error("the user_id parameter is empty!");
+            throw new Error("the user_id is empty!");
         }
         if (!sticker) {
-            throw new Error("the sticker parameter is empty!");
+            throw new Error("the sticker is empty!");
         }
         try {
             const formData = new FormData();
@@ -1264,19 +1265,19 @@ export class blBot {
     async createNewStickerSet(user_id: string | number, name: string, title: string, sticker: InputSticker[]) {
 
         if (!user_id) {
-            throw new Error("the user_id parameter is empty!");
+            throw new Error("the user_id is empty!");
         }
 
         if (!name) {
-            throw new Error("the name parameter is empty!");
+            throw new Error("the name is empty!");
         }
 
         if (!title) {
-            throw new Error("the title parameter is empty!");
+            throw new Error("the title is empty!");
         }
 
         if (!sticker) {
-            throw new Error("the sticker parameter is empty!");
+            throw new Error("the sticker is empty!");
         }
 
         try {
@@ -1309,16 +1310,16 @@ export class blBot {
     async addStickerToSet(user_id: string | number, name: string, sticker: InputSticker[]) {
 
         if (!user_id) {
-            throw new Error("the user_id parameter is empty!");
+            throw new Error("the user_id is empty!");
         }
 
         if (!name) {
-            throw new Error("the name parameter is empty!");
+            throw new Error("the name is empty!");
         }
 
 
         if (!sticker) {
-            throw new Error("the sticker parameter is empty!");
+            throw new Error("the sticker is empty!");
         }
 
         try {
