@@ -6,11 +6,13 @@ export class CallbackQuery {
     public from?: User;
     public message?: Message;
     public data?: string;
-    constructor(id?: string, from?: User, message?: Message, data?: string) {
+    public chat_instance?: string;
+    constructor(id?: string, from?: User, message?: Message, data?: string, chat_instance?: string) {
         this.id = id;
         this.from = from;
         this.message = message;
         this.data = data;
+        this.chat_instance = chat_instance;
 
     }
 }
