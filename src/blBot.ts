@@ -102,7 +102,7 @@ class blBot {
          * 
          * @param main - Async handler function for processing each update
     */
-    async Polling(main: (message: Update) => Promise<void>) {
+    async Polling(main: (message: Update) => Promise<void>, limit: number = 100, timeout: number = 15) {
         if (!this.updateId) this.updateId = 0;
 
         while (true) {
@@ -110,7 +110,7 @@ class blBot {
 
             try {
                 const res = await fetch(
-                    `https://${this.baseUrl}/bot${this.token}/getUpdates?offset=${this.updateId}&timeout=10`
+                    `https://${this.baseUrl}/bot${this.token}/getUpdates?offset=${this.updateId}&limit=${limit}&timeout=${timeout}`
                 );
 
                 const json: Result = await res.json();
@@ -126,7 +126,7 @@ class blBot {
                 console.error("Polling error:", error);
             }
 
-            await this.sleep(5000);
+            await this.sleep(2000);
         }
     }
 
@@ -1683,7 +1683,7 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/uploadStickerFile`,
                 {
                     method: "POST",
-                    body: formData
+                    body: formData,
                 });
             if (!response.ok) {
                 return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
