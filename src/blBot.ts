@@ -85,6 +85,7 @@ class blBot {
         }
     }
 
+    // ----------------------->BOT SECTION START FROM HERE<-----------------------
     async setWebhook(url: string) {
         if (!url) {
             throw new Error("the url is empty!");
@@ -133,23 +134,6 @@ class blBot {
         }
     }
 
-    async WebhookInfo(url: string) {
-        if (!url) {
-            throw new Error("the url is empty!");
-        }
-        try {
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/WebhookInfo?url=${url}`)
-
-            if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
-            }
-            const responseJson = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
-        }
-        catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
-        }
-    }
     async testRegex(regex: string, text: string): Promise<Record<string, any>> {
         try {
             const regExp = new RegExp(regex);
@@ -1344,6 +1328,49 @@ class blBot {
         catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
         }
+    }
+
+
+
+
+    // ----------------------->WALLET SECTION START FROM HERE<-----------------------
+
+    /**
+  * This method is currently under maintenance and is not functional.
+  * It will be re-enabled or updated soon.
+  *
+  * @returns {Promise<null>} A Promise that resolves to `null` as a placeholder.
+  */
+    async sendInvoice() {
+
+        return null;
+    }
+    /**
+ * This method is currently under maintenance and is not functional.
+ * It will be re-enabled or updated soon.
+ *
+ * @returns {Promise<null>} A Promise that resolves to `null` as a placeholder.
+ */
+    async createInvoiceLink() {
+        return null;
+    }
+    /**
+ * This method is currently under maintenance and is not functional.
+ * It will be re-enabled or updated soon.
+ *
+ * @returns {Promise<null>} A Promise that resolves to `null` as a placeholder.
+ */
+    async answerPreCheckoutQuery() {
+        return null
+    }
+    /**
+ * This method is currently under maintenance and is not functional.
+ * It will be re-enabled or updated soon.
+ *
+ * @returns {Promise<null>} A Promise that resolves to `null` as a placeholder.
+ */
+    async inquireTransaction() {
+        return null
     }
 }
 
