@@ -17,7 +17,9 @@ import { InlineKeyboardButton } from "./Entities/InlineKeyboardButton";
 import { InputSticker } from "./Entities/InputSticker";
 import { BaseUrl } from "./Entities/BaseUrl";
 import { WebhookInfo } from "./Entities/WebhookInfo";
-
+import { Message } from "./Entities/Message";
+import { User } from "./Entities/User";
+import { File } from "./Entities/File";
 
 
 /**
@@ -34,7 +36,7 @@ class blBot {
     /** Last processed update ID */
     private updateId: number = 0;
     /** Maximum concurrent handlers */
-    private conCurrency = 5;
+    private conCurrency = 100;
     /** Number of currently running handlers */
     private running = 0;
     /** Internal update queue */
@@ -106,7 +108,7 @@ class blBot {
         if (!this.updateId) this.updateId = 0;
 
         while (true) {
-            console.log("last updateId:", this.updateId);
+            // console.log("last updateId:", this.updateId);
 
             try {
                 const res = await fetch(
@@ -115,7 +117,7 @@ class blBot {
 
                 const json: Result = await res.json();
 
-                if (json.ok && Array.isArray(json.result)) {
+                if (json.ok && Array.isArray(json.result) && json.result.length) {
                     for (const item of json.result) {
                         this.updateId = item.update_id + 1;
 
@@ -146,10 +148,10 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/bot${this.token}/setWebhook?url=${url}`)
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         }
         catch (error: any) {
@@ -167,10 +169,10 @@ class blBot {
         try {
             const response = await fetch(`https://${this.baseUrl}/bot${this.token}/deleteWebhook`)
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
         }
         catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -187,10 +189,10 @@ class blBot {
         try {
             const response = await fetch(`https://${this.baseUrl}/bot${this.token}/getWebhookInfo`)
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
-            const responseJson: WebhookInfo = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            const responseJson = await response.json();
+            return { ok: true, statusCode: response.status, result: responseJson.result as WebhookInfo }
         }
         catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -225,11 +227,11 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/bot${this.token}/getMe`);
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            return { ok: true, statusCode: response.status, result: responseJson.result as User }
         }
         catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -271,10 +273,10 @@ class blBot {
                     body: formData
                 });
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            return { ok: true, statusCode: response.status, result: responseJson.result as Message }
 
         }
         catch (error: any) {
@@ -309,10 +311,10 @@ class blBot {
         try {
             const response = await fetch(`https://${this.baseUrl}/bot${this.token}/forwardMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            return { ok: true, statusCode: response.status, result: responseJson.result as Message }
         }
         catch (error: any) {
             throw new Error(`{ ok: false, message: ${error.message} }`);
@@ -335,19 +337,19 @@ class blBot {
             throw new Error("the chat_id is empty!");
         }
         if (!from_chat_id) {
-            throw new Error("the chat_id is empty!");
+            throw new Error("the from_chat_id is empty!");
         }
         if (!message_id) {
-            throw new Error("the chat_id is empty!");
+            throw new Error("the message_id is empty!");
         }
 
         try {
             const response = await fetch(`https://${this.baseUrl}/bot${this.token}/copyMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            return { ok: true, statusCode: response.status, result: responseJson.result as Message }
         }
         catch (error: any) {
 
@@ -437,16 +439,16 @@ class blBot {
 
             const response = await fetch(`https://${this.baseUrl}/bot${this.token}/${method}`, {
                 method: "POST",
-                body: formData,
+                body: formData
             });
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             try {
                 const responseJson = await response.json();
-                return { ok: true, status: response.status, result: `${responseJson}` }
+                return { ok: true, statusCode: response.status, result: responseJson.result as Message }
             } catch {
 
                 throw new Error(`Invalid JSON response from server`);
@@ -477,7 +479,7 @@ class blBot {
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove) {
         // Use the internal sendContent method, specifying 'photo' as the content type.
         const res = await this.sendContent(chat_id, from_chat_id, photo, "photo", caption, reply_to_message_id, reply_markup, "sendPhoto");
-        return res;
+        return res
     }
 
     /**
@@ -631,15 +633,18 @@ class blBot {
                 formData.append("reply_to_message_id", String(reply_to_message_id));
             }
 
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/sendMediaGroup`, { method: "POST", body: formData });
+            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/sendMediaGroup`, {
+                method: "POST",
+                body: formData
+            });
 
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: responseJson }
+            return { ok: true, statusCode: response.status, result: responseJson.result as Message[] }
         }
         catch (error: any) {
             throw new Error(`an error occur:${error.message}`);
@@ -701,12 +706,12 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: false, status: `${response.status}`, message: `${response.statusText}`
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
                 };
             }
 
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: responseJson }
+            return { ok: true, statusCode: response.status, result: responseJson.result as Message }
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -765,11 +770,11 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: false, status: `${response.status}`, message: `${response.statusText}`
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
                 };
             }
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: responseJson }
+            return { ok: true, statusCode: response.status, result: responseJson.result as Message }
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -804,11 +809,11 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: false, status: `${response.status}`, message: `${response.statusText}`
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
                 };
             }
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message} `);
@@ -837,10 +842,12 @@ class blBot {
                 }
             );
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return {
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                };
             }
             const responseJson = await response.json();
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            return { ok: true, statusCode: response.status, result: responseJson.result as File }
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -870,7 +877,7 @@ class blBot {
             );
 
             if (!response.ok) {
-                return { ok: false, status: response.status, message: response.statusText };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const arrayBuffer = await response.arrayBuffer();
@@ -887,6 +894,40 @@ class blBot {
 
         } catch (error: any) {
             return { ok: false, status: 500, message: `an error occurred: ${error.message}` };
+        }
+    }
+
+    async answerCallbackQuery(callback_query_id: string, text?: string, show_alert?: boolean) {
+        if (!callback_query_id) {
+            throw new Error("the callback_query_id is empty!");
+        }
+        try {
+
+            const formData = new FormData();
+            formData.append("file_id", callback_query_id);
+            if (text) {
+                formData.append("text", text);
+            }
+            if (show_alert) {
+                formData.append("show_alert", `${show_alert}`);
+            }
+            const response = await fetch(
+                `https://${this.baseUrl}/bot${this.token}/answerCallbackQuery`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+            if (!response.ok) {
+                return {
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                };
+            }
+            const responseJson = await response.json();
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
+
+        } catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
     /**
@@ -908,11 +949,12 @@ class blBot {
                 `https://${this.baseUrl}/bot${this.token}/askReview?user_id=${user_id}&delay_seconds=${delay_seconds}`,
             );
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return {
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                };
             }
             const responseJson = await response.json();
-
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -940,11 +982,12 @@ class blBot {
                 `https://${this.baseUrl}/bot${this.token}/banChatMember?chat_id=${user_id}&user_id=${user_id}`,
             );
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return {
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                };
             }
             const responseJson = await response.json();
-
-            return { ok: true, status: response.status, result: responseJson }
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -974,11 +1017,12 @@ class blBot {
                 `https://${this.baseUrl}/bot${this.token}/unbanChatMember?chat_id=${chat_id}&user_id=${user_id}&only_if_banned=${only_if_banned}`,
             );
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return {
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                };
             }
             const responseJson = await response.json();
-
-            return { ok: true, status: response.status, result: `${responseJson}` }
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -1026,11 +1070,12 @@ class blBot {
             );
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return {
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                };
             }
             const responseJson = await response.json();
-
-            return { ok: true, status: response.status, result: responseJson }
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -1073,17 +1118,45 @@ class blBot {
                     body: formData
                 });
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return {
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                };
             }
-
             const responseJson = await response.json();
-
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
         }
         catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
         }
 
+    }
+
+    async setChatDescription(chat_id: string | number, description: string) {
+
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!description) {
+            throw new Error("the description is empty!");
+        }
+
+
+
+        try {
+            const response = await fetch(`https://${this.baseUrl}/${this.token}/setChatDescription?chat_id=${chat_id}&description=${description}`);
+
+            if (!response.ok) {
+                return {
+                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                };
+            }
+            const responseJson = await response.json();
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
+
+        }
+        catch (error: any) {
+            throw new Error(`an error occur: ${error.message}`)
+        }
     }
     /**
          * A helper method to execute API calls that only require a chat_id.
@@ -1100,12 +1173,12 @@ class blBot {
         try {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/${type}?chat_id=${chat_id}`);
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result };
         }
         catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
@@ -1121,7 +1194,13 @@ class blBot {
     */
     async leaveChat(chat_id: string | number) {
         const res = await this.FunctionsWithChatIdOnly(chat_id, "leaveChat");
-        return res;
+        if (res.ok) {
+            return { ok: true, status: res.statusCode, result: res.result as Boolean };
+        }
+
+
+        return { ok: false, status: res.statusCode, message: res.statusMessage };
+
     }
     /**
          * Gets information about a specific chat.
@@ -1135,15 +1214,15 @@ class blBot {
         if (res?.ok) {
             return {
                 ok: true,
-                status: res.status,
+                status: res.statusCode,
                 result: res.result as ChatFullInfo
             };
         }
 
         return {
             ok: false,
-            status: res.status ?? null,
-            message: res.message ?? "Unknown error"
+            status: res.statusCode ?? null,
+            message: res.statusMessage ?? "Unknown error"
         }
 
     }
@@ -1161,15 +1240,15 @@ class blBot {
         if (res.ok) {
             return {
                 ok: true,
-                status: res.status ?? null,
+                status: res.statusCode ?? null,
                 result: res.result.result as ChatMember[]
             };
         }
 
         return {
             ok: false,
-            status: res.status ?? null,
-            message: res.message ?? "Unknown error"
+            status: res.statusCode ?? null,
+            message: res.statusMessage ?? "Unknown error"
         };
     }
     /**
@@ -1184,15 +1263,15 @@ class blBot {
         if (res?.ok) {
             return {
                 ok: true,
-                status: res.status ?? null,
-                result: res.result
+                status: res.statusCode ?? null,
+                result: res.result as Number
             };
         }
 
         return {
             ok: false,
-            status: res.status ?? null,
-            message: res.message ?? "Unknown error"
+            status: res.statusMessage ?? null,
+            message: res.statusMessage ?? "Unknown error"
         };
     }
     /**
@@ -1215,12 +1294,12 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/getChatMember?chat_id=${chat_id}&user_id=${user_id}`);
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
-            const responseJson: ChatMember = await response.json();
+            const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as ChatMember };
 
         }
         catch (error: any) {
@@ -1247,12 +1326,12 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/pinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as Boolean };
 
         }
         catch (error: any) {
@@ -1278,12 +1357,12 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/unPinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
 
         }
         catch (error: any) {
@@ -1305,12 +1384,12 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/unpinAllChatMessages?chat_id=${chat_id}`);
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson };
 
         }
         catch (error: any) {
@@ -1342,13 +1421,12 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/setChatTitle?chat_id=${chat_id}&title=${title}`);
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
-
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
         }
         catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
@@ -1366,12 +1444,12 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/deleteChatPhoto?chat_id=${chat_id}`);
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
 
         }
         catch (error: any) {
@@ -1392,12 +1470,12 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/createChatInviteLink?chat_id=${chat_id}`);
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as Map<string, string | number> };
 
         }
         catch (error: any) {
@@ -1417,12 +1495,12 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/revokeChatInviteLink?chat_id=${chat_id}&invite_link=${invite_link}`);
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as Map<string, string | number> };
 
         }
         catch (error: any) {
@@ -1440,12 +1518,12 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/exportChatInviteLink?chat_id=${chat_id}`);
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as Map<string, string | number> };
 
         }
         catch (error: any) {
@@ -1491,11 +1569,12 @@ class blBot {
             );
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
+
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result };
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
@@ -1546,11 +1625,12 @@ class blBot {
             );
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
+
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result };
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
@@ -1590,11 +1670,12 @@ class blBot {
             );
 
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
+
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
@@ -1643,7 +1724,7 @@ class blBot {
             }
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson }
+            return { ok: true, statusCode: response.status, result: responseJson }
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -1666,7 +1747,8 @@ class blBot {
             throw new Error("the sticker is empty!");
         }
         try {
-            const formData = new FormData();
+            const formData = new FormData()
+
 
             formData.append("user_id", `${user_id}`);
             if (sticker instanceof fs.ReadStream) {
@@ -1683,15 +1765,15 @@ class blBot {
             const response = await fetch(`https://${this.baseUrl}/${this.token}/uploadStickerFile`,
                 {
                     method: "POST",
-                    body: formData,
+                    body: formData
                 });
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as File };
         }
         catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
@@ -1741,12 +1823,12 @@ class blBot {
                     body: formData
                 });
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
         }
         catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
@@ -1789,12 +1871,12 @@ class blBot {
                     body: formData
                 });
             if (!response.ok) {
-                return { ok: false, status: `${response.status}`, message: `${response.statusText}` };
+                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
 
             const responseJson = await response.json();
 
-            return { ok: true, status: response.status, result: responseJson };
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
         }
         catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
@@ -1817,29 +1899,29 @@ class blBot {
         return null;
     }
     /**
- * This method is currently under maintenance and is not functional.
- * It will be re-enabled or updated soon.
- *
- * @returns {Promise<null>} A Promise that resolves to `null` as a placeholder.
- */
+         * This method is currently under maintenance and is not functional.
+         * It will be re-enabled or updated soon.
+         *
+         * @returns {Promise<null>} A Promise that resolves to `null` as a placeholder.
+    */
     async createInvoiceLink() {
         return null;
     }
     /**
- * This method is currently under maintenance and is not functional.
- * It will be re-enabled or updated soon.
- *
- * @returns {Promise<null>} A Promise that resolves to `null` as a placeholder.
- */
+         * This method is currently under maintenance and is not functional.
+         * It will be re-enabled or updated soon.
+         *
+         * @returns {Promise<null>} A Promise that resolves to `null` as a placeholder.
+    */
     async answerPreCheckoutQuery() {
         return null
     }
     /**
- * This method is currently under maintenance and is not functional.
- * It will be re-enabled or updated soon.
- *
- * @returns {Promise<null>} A Promise that resolves to `null` as a placeholder.
- */
+         * This method is currently under maintenance and is not functional.
+         * It will be re-enabled or updated soon.
+         *
+         * @returns {Promise<null>} A Promise that resolves to `null` as a placeholder.
+    */
     async inquireTransaction() {
         return null
     }
