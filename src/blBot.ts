@@ -28,7 +28,7 @@ import { File } from "./Entities/File";
  * A lightweight client for interacting with Bale Bot API.
  * Supports polling, webhook management, and basic messaging.
  */
-class blBot {
+export class blBot {
     /** Bot access token */
     private token: string = "";
     /** Base API URL (default: tapi.bale.ai but supports api.telegram.org too) */
@@ -106,7 +106,7 @@ class blBot {
     */
     async Polling(main: (message: Update) => Promise<void>, limit: number = 100, timeout: number = 15) {
         if (!this.updateId) this.updateId = 0;
-
+        console.error(`[${new Date().toISOString()}] The Bot is started!`);
         while (true) {
             // console.log("last updateId:", this.updateId);
 
@@ -706,7 +706,7 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
 
@@ -770,7 +770,7 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
@@ -809,7 +809,7 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
@@ -843,7 +843,7 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
@@ -920,7 +920,7 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
@@ -950,7 +950,7 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
@@ -983,7 +983,7 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
@@ -1018,7 +1018,7 @@ class blBot {
             );
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
@@ -1071,7 +1071,7 @@ class blBot {
 
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
@@ -1119,7 +1119,7 @@ class blBot {
                 });
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
@@ -1147,7 +1147,7 @@ class blBot {
 
             if (!response.ok) {
                 return {
-                    ok: true, statusCode: response.status,statusMessage:response.statusText
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
