@@ -111,8 +111,8 @@ export class blBot {
             // console.log("last updateId:", this.updateId);
 
             try {
-                const res = await fetch(
-                    `https://${this.baseUrl}/bot${this.token}/getUpdates?offset=${this.updateId}&limit=${limit}&timeout=${timeout}`
+                const res = await fetch(encodeURI(
+                    `https://${this.baseUrl}/bot${this.token}/getUpdates?offset=${this.updateId}&limit=${limit}&timeout=${timeout}`)
                 );
 
                 const json: Result = await res.json();
@@ -145,7 +145,7 @@ export class blBot {
             throw new Error("the url is empty!");
         }
         try {
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/setWebhook?url=${url}`)
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/setWebhook?url=${url}`))
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -167,7 +167,7 @@ export class blBot {
     async deleteWebhook() {
 
         try {
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/deleteWebhook`)
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/deleteWebhook`))
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
@@ -187,7 +187,7 @@ export class blBot {
     async getWebhookInfo() {
 
         try {
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/getWebhookInfo`)
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/getWebhookInfo`))
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
@@ -224,7 +224,7 @@ export class blBot {
     */
     async getMe() {
         try {
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/getMe`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/getMe`));
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -267,7 +267,7 @@ export class blBot {
                 formData.append("reply_markup", `${JSON.stringify(reply_markup)}`)
             }
 
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/sendMessage`,
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/sendMessage`),
                 {
                     method: "POST",
                     body: formData
@@ -309,7 +309,7 @@ export class blBot {
             throw new Error("the chat_id is empty!");
         }
         try {
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/forwardMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/forwardMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`));
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
@@ -344,7 +344,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/copyMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/copyMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`));
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
@@ -437,7 +437,7 @@ export class blBot {
             }
 
 
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/${method}`, {
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/${method}`), {
                 method: "POST",
                 body: formData
             });
@@ -633,7 +633,7 @@ export class blBot {
                 formData.append("reply_to_message_id", String(reply_to_message_id));
             }
 
-            const response = await fetch(`https://${this.baseUrl}/bot${this.token}/sendMediaGroup`, {
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/sendMediaGroup`), {
                 method: "POST",
                 body: formData
             });
@@ -698,7 +698,7 @@ export class blBot {
                 formData.append("reply_markup", JSON.stringify(reply_markup));
 
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/sendLocation`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/sendLocation`),
                 {
                     method: "POST",
                     body: formData
@@ -762,7 +762,7 @@ export class blBot {
                 formData.append("reply_markup", JSON.stringify(reply_markup));
 
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/sendContact`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/sendContact`),
                 {
                     method: "POST",
                     body: formData
@@ -801,7 +801,7 @@ export class blBot {
             formData.append("action", `${action}`);
 
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/sendChatAction`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/sendChatAction`),
                 {
                     method: "POST",
                     body: formData
@@ -835,7 +835,7 @@ export class blBot {
             formData.append("file_id", `${file_id}`);
 
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/getFile`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/getFile`),
                 {
                     method: "POST",
                     body: formData
@@ -873,7 +873,7 @@ export class blBot {
 
 
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/${file_path}`
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/${file_path}`)
             );
 
             if (!response.ok) {
@@ -912,7 +912,7 @@ export class blBot {
                 formData.append("show_alert", `${show_alert}`);
             }
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/answerCallbackQuery`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/answerCallbackQuery`),
                 {
                     method: "POST",
                     body: formData
@@ -946,7 +946,7 @@ export class blBot {
         }
         try {
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/askReview?user_id=${user_id}&delay_seconds=${delay_seconds}`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/askReview?user_id=${user_id}&delay_seconds=${delay_seconds}`),
             );
             if (!response.ok) {
                 return {
@@ -979,7 +979,7 @@ export class blBot {
         }
         try {
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/banChatMember?chat_id=${user_id}&user_id=${user_id}`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/banChatMember?chat_id=${user_id}&user_id=${user_id}`),
             );
             if (!response.ok) {
                 return {
@@ -1014,7 +1014,7 @@ export class blBot {
         }
         try {
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/unbanChatMember?chat_id=${chat_id}&user_id=${user_id}&only_if_banned=${only_if_banned}`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/unbanChatMember?chat_id=${chat_id}&user_id=${user_id}&only_if_banned=${only_if_banned}`),
             );
             if (!response.ok) {
                 return {
@@ -1066,7 +1066,7 @@ export class blBot {
             ].filter(Boolean).join('&'); // Filter out nulls and join with '&'
 
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/promoteChatMember?${queryParams}`
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/promoteChatMember?${queryParams}`)
             );
 
             if (!response.ok) {
@@ -1112,7 +1112,7 @@ export class blBot {
                 console.log(`Appending content as stream: ${fileName}`);
 
             }
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/setChatPhoto`,
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/setChatPhoto`),
                 {
                     method: "POST",
                     body: formData
@@ -1143,7 +1143,7 @@ export class blBot {
 
 
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/setChatDescription?chat_id=${chat_id}&description=${description}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/setChatDescription?chat_id=${chat_id}&description=${description}`));
 
             if (!response.ok) {
                 return {
@@ -1171,7 +1171,7 @@ export class blBot {
             throw new Error("the chat_id is empty!");
         }
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/${type}?chat_id=${chat_id}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/${type}?chat_id=${chat_id}`));
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
             }
@@ -1291,7 +1291,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/getChatMember?chat_id=${chat_id}&user_id=${user_id}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/getChatMember?chat_id=${chat_id}&user_id=${user_id}`));
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -1323,7 +1323,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/pinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/pinChatMessage?chat_id=${chat_id}&message_id=${message_id}`));
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -1354,7 +1354,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/unPinChatMessage?chat_id=${chat_id}&message_id=${message_id}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/unPinChatMessage?chat_id=${chat_id}&message_id=${message_id}`));
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -1381,7 +1381,7 @@ export class blBot {
         }
 
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/unpinAllChatMessages?chat_id=${chat_id}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/unpinAllChatMessages?chat_id=${chat_id}`));
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -1418,7 +1418,7 @@ export class blBot {
 
 
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/setChatTitle?chat_id=${chat_id}&title=${title}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/setChatTitle?chat_id=${chat_id}&title=${title}`));
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -1441,7 +1441,7 @@ export class blBot {
      */
     async deleteChatPhoto(chat_id: string | number) {
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/deleteChatPhoto?chat_id=${chat_id}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/deleteChatPhoto?chat_id=${chat_id}`));
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -1467,7 +1467,7 @@ export class blBot {
      */
     async createChatInviteLink(chat_id: string | number) {
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/createChatInviteLink?chat_id=${chat_id}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/createChatInviteLink?chat_id=${chat_id}`));
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -1492,7 +1492,7 @@ export class blBot {
      */
     async revokeChatInviteLink(chat_id: string | number, invite_link: string) {
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/revokeChatInviteLink?chat_id=${chat_id}&invite_link=${invite_link}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/revokeChatInviteLink?chat_id=${chat_id}&invite_link=${invite_link}`));
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -1515,7 +1515,7 @@ export class blBot {
      */
     async exportChatInviteLink(chat_id: string | number) {
         try {
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/exportChatInviteLink?chat_id=${chat_id}`);
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/exportChatInviteLink?chat_id=${chat_id}`));
 
             if (!response.ok) {
                 return { ok: false, statusCode: response.status, statusMessage: response.statusText };
@@ -1561,7 +1561,7 @@ export class blBot {
             formData.append("text", `${text}`);
 
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/editMessageText`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/editMessageText`),
                 {
                     method: "POST",
                     body: formData
@@ -1617,7 +1617,7 @@ export class blBot {
             }
 
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/editMessageText`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/editMessageText`),
                 {
                     method: "POST",
                     body: formData
@@ -1662,7 +1662,7 @@ export class blBot {
             formData.append("message_id", `${message_id}`);
 
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/deleteMessage`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/deleteMessage`),
                 {
                     method: "POST",
                     body: formData
@@ -1710,7 +1710,7 @@ export class blBot {
             formData.append("message_id", `${message_id}`);
             formData.append("reply_markup", `${JSON.stringify(reply_markup)}`);
             const response = await fetch(
-                `https://${this.baseUrl}/bot${this.token}/editMessageReplyMarkup`,
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/editMessageReplyMarkup`),
                 {
                     method: "POST",
                     body: formData
@@ -1762,7 +1762,7 @@ export class blBot {
                 console.log(`Appending content as stream: ${fileName}`);
 
             }
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/uploadStickerFile`,
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/uploadStickerFile`),
                 {
                     method: "POST",
                     body: formData
@@ -1817,7 +1817,7 @@ export class blBot {
             formData.append("title", `${title}`);
             formData.append("sticker", `${JSON.stringify(sticker)}`);
 
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/createNewStickerSet`,
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/createNewStickerSet`),
                 {
                     method: "POST",
                     body: formData
@@ -1865,7 +1865,7 @@ export class blBot {
             formData.append("user_id", `${user_id}`);
             formData.append("name", `${name}`);
             formData.append("sticker", `${JSON.stringify(sticker)}`);
-            const response = await fetch(`https://${this.baseUrl}/${this.token}/addStickerToSet`,
+            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/addStickerToSet`),
                 {
                     method: "POST",
                     body: formData
