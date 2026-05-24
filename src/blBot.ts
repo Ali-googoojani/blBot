@@ -20,8 +20,7 @@ import { WebhookInfo } from "./Entities/WebhookInfo";
 import { Message } from "./Entities/Message";
 import { User } from "./Entities/User";
 import { File } from "./Entities/File";
-
-
+import { InviteLinkInfo } from "./Entities/InviteLink";
 /**
  * Bale Bot Client
  * 
@@ -80,11 +79,9 @@ export class blBot {
          * @param main - Main update handler
     */
     private async pump(main: (message: Update) => Promise<void>) {
-
         while (this.running <= this.conCurrency && this.queue.length > 0) {
             const item = this.queue.shift()!;
             this.running++;
-
             Promise.resolve()
                 .then(() => main(item))
                 .catch((err) => console.error("main error:", err))
@@ -106,7 +103,6 @@ export class blBot {
     */
     async Polling(main: (message: Update) => Promise<void>, limit: number = 100, timeout: number = 15) {
         if (!this.updateId) this.updateId = 0;
-        console.error(`[${new Date().toISOString()}] The Bot is started!`);
         while (true) {
             // console.log("last updateId:", this.updateId);
 
@@ -208,6 +204,9 @@ export class blBot {
         * @param text - Text to test against
     */
     async testRegex(regex: string, text: string): Promise<Record<string, any>> {
+        if (!regex || !text) {
+            throw new Error("regex or text is empty!")
+        }
         try {
             const regExp = new RegExp(regex);
             const match = regExp.test(text);
@@ -253,7 +252,7 @@ export class blBot {
             throw new Error("the chat_id is empty!");
         }
         if (!text) {
-            throw new Error("the chat_id is empty!");
+            throw new Error("the text is empty!");
         }
 
         try {
@@ -264,7 +263,7 @@ export class blBot {
                 formData.append("reply_to_message_id", `${reply_to_message_id}`)
             }
             if (reply_markup) {
-                formData.append("reply_markup", `${JSON.stringify(reply_markup)}`)
+                formData.append("reply_markup", JSON.stringify(reply_markup))
             }
 
             const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/sendMessage`),
@@ -280,7 +279,7 @@ export class blBot {
 
         }
         catch (error: any) {
-            throw new Error(`{ ok: false, message: ${error.message} }`);
+            throw new Error(`an error occur: ${error.message}`);
 
         }
 
@@ -303,10 +302,10 @@ export class blBot {
             throw new Error("the chat_id is empty!");
         }
         if (!from_chat_id) {
-            throw new Error("the chat_id is empty!");
+            throw new Error("the from_chat_id is empty!");
         }
         if (!message_id) {
-            throw new Error("the chat_id is empty!");
+            throw new Error("the message_id is empty!");
         }
         try {
             const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/forwardMessage?chat_id=${chat_id}&from_chat_id=${from_chat_id}&message_id=${message_id}`));
@@ -317,7 +316,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as Message }
         }
         catch (error: any) {
-            throw new Error(`{ ok: false, message: ${error.message} }`);
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
 
@@ -353,7 +352,7 @@ export class blBot {
         }
         catch (error: any) {
 
-            return { ok: false, message: `${error.message}` }
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
     /**
@@ -405,7 +404,9 @@ export class blBot {
 
             formData.append("chat_id", String(chat_id));
             formData.append("from_chat_id", String(from_chat_id));
-            if (caption) formData.append("caption", caption);
+            if (caption) {
+                formData.append("caption", caption);
+            }
 
             if (reply_to_message_id && reply_to_message_id > 0) {
                 formData.append("reply_to_message_id", String(reply_to_message_id));
@@ -628,9 +629,8 @@ export class blBot {
 
             formData.append("chat_id", String(chat_id));
             formData.append("media", JSON.stringify(media));
-            console.log(JSON.stringify(media));
             if (reply_to_message_id) {
-                formData.append("reply_to_message_id", String(reply_to_message_id));
+                formData.append("reply_to_message_id", `${reply_to_message_id}`);
             }
 
             const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/sendMediaGroup`), {
@@ -672,13 +672,13 @@ export class blBot {
         reply_markup?: InlineKeyBoard | ReplyKeyboardMarkup | ReplyKeyboardRemove
     ) {
         // Corrected validation: throw error if values are missing, not if they exist.
-        if (chat_id) {
+        if (!chat_id) {
             throw new Error("the chat_id is empty!");
         }
-        if (latitude) {
+        if (!latitude) {
             throw new Error("the latitude is empty!");
         }
-        if (longitude) {
+        if (!longitude) {
             throw new Error("the longitude is empty!");
         }
         try {
@@ -688,13 +688,13 @@ export class blBot {
             formData.append("latitude", `${latitude}`);
             formData.append("longitude", `${longitude}`);
 
-            if (horizontal_accuracy !== undefined)
-                formData.append("horizontal_accuracy", String(horizontal_accuracy));
+            if (horizontal_accuracy)
+                formData.append("horizontal_accuracy", `${horizontal_accuracy}`);
 
-            if (reply_to_message_id !== undefined)
-                formData.append("reply_to_message_id", String(reply_to_message_id));
+            if (reply_to_message_id)
+                formData.append("reply_to_message_id", `${reply_to_message_id}`);
 
-            if (reply_markup !== undefined)
+            if (reply_markup)
                 formData.append("reply_markup", JSON.stringify(reply_markup));
 
             const response = await fetch(
@@ -752,13 +752,13 @@ export class blBot {
             formData.append("phone_number", `${phone_number}`);
             formData.append("first_name", `${first_name}`);
 
-            if (last_name !== undefined)
-                formData.append("last_name", String(last_name));
+            if (last_name)
+                formData.append("last_name", `${last_name}`);
 
-            if (reply_to_message_id !== undefined)
-                formData.append("reply_to_message_id", String(reply_to_message_id));
+            if (reply_to_message_id)
+                formData.append("reply_to_message_id", `${reply_to_message_id}`);
 
-            if (reply_markup !== undefined)
+            if (reply_markup)
                 formData.append("reply_markup", JSON.stringify(reply_markup));
 
             const response = await fetch(
@@ -871,7 +871,6 @@ export class blBot {
         }
         try {
 
-
             const response = await fetch(
                 encodeURI(`https://${this.baseUrl}/bot${this.token}/${file_path}`)
             );
@@ -883,17 +882,17 @@ export class blBot {
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
-            fs.writeFileSync(output_path, buffer);
+            await fs.promises.writeFile(output_path, buffer);
 
             return {
                 ok: true,
-                status: response.status,
-                message: "file downloaded successfully",
+                statusCode: response.status,
+                statusMessage: "file downloaded successfully",
                 path: output_path
             };
 
         } catch (error: any) {
-            return { ok: false, status: 500, message: `an error occurred: ${error.message}` };
+            throw new Error(`an error occur: ${error.message}`);
         }
     }
 
@@ -979,7 +978,7 @@ export class blBot {
         }
         try {
             const response = await fetch(
-                encodeURI(`https://${this.baseUrl}/bot${this.token}/banChatMember?chat_id=${user_id}&user_id=${user_id}`),
+                encodeURI(`https://${this.baseUrl}/bot${this.token}/banChatMember?chat_id=${chat_id}&user_id=${user_id}`),
             );
             if (!response.ok) {
                 return {
@@ -1002,15 +1001,12 @@ export class blBot {
          * @param only_if_banned - Pass True, if the user is already not in the chat.
          * @returns A Promise resolving to an API response object, or throws an error.
      */
-    async unbanChatMember(chat_id: string | number, user_id: number, only_if_banned: boolean) {
+    async unbanChatMember(chat_id: string | number, user_id: number, only_if_banned: boolean = true) {
         if (!chat_id) {
             throw new Error("the chat_id is empty!");
         }
         if (!user_id) {
             throw new Error("the user_id is empty!");
-        }
-        if (!only_if_banned) {
-            throw new Error("the only_if_banned is empty!");
         }
         try {
             const response = await fetch(
@@ -1056,13 +1052,13 @@ export class blBot {
             const queryParams = [
                 `chat_id=${chat_id}`,
                 `user_id=${user_id}`,
-                can_change_info !== undefined ? `can_change_info=${can_change_info}` : null,
-                can_post_messages !== undefined ? `can_post_messages=${can_post_messages}` : null,
-                can_edit_messages !== undefined ? `can_edit_messages=${can_edit_messages}` : null,
-                can_delete_messages !== undefined ? `can_delete_messages=${can_delete_messages}` : null,
-                can_manage_video_chats !== undefined ? `can_manage_video_chats=${can_manage_video_chats}` : null,
-                can_invite_users !== undefined ? `can_invite_users=${can_invite_users}` : null,
-                can_restrict_members !== undefined ? `can_restrict_members=${can_restrict_members}` : null,
+                can_change_info ? `can_change_info=${can_change_info}` : null,
+                can_post_messages ? `can_post_messages=${can_post_messages}` : null,
+                can_edit_messages ? `can_edit_messages=${can_edit_messages}` : null,
+                can_delete_messages ? `can_delete_messages=${can_delete_messages}` : null,
+                can_manage_video_chats ? `can_manage_video_chats=${can_manage_video_chats}` : null,
+                can_invite_users ? `can_invite_users=${can_invite_users}` : null,
+                can_restrict_members ? `can_restrict_members=${can_restrict_members}` : null,
             ].filter(Boolean).join('&'); // Filter out nulls and join with '&'
 
             const response = await fetch(
@@ -1140,8 +1136,6 @@ export class blBot {
             throw new Error("the description is empty!");
         }
 
-
-
         try {
             const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/setChatDescription?chat_id=${chat_id}&description=${description}`));
 
@@ -1194,12 +1188,18 @@ export class blBot {
     */
     async leaveChat(chat_id: string | number) {
         const res = await this.FunctionsWithChatIdOnly(chat_id, "leaveChat");
-        if (res.ok) {
-            return { ok: true, status: res.statusCode, result: res.result as Boolean };
+        if (res?.ok) {
+            return {
+                ok: true,
+                statusCode: res.statusCode,
+                result: res.result as boolean
+            };
         }
-
-
-        return { ok: false, status: res.statusCode, message: res.statusMessage };
+        return {
+            ok: false,
+            statusCode: res.statusCode,
+            statusMessage: res.statusMessage
+        };
 
     }
     /**
@@ -1214,7 +1214,7 @@ export class blBot {
         if (res?.ok) {
             return {
                 ok: true,
-                status: res.statusCode,
+                statusCode: res.statusCode,
                 result: res.result as ChatFullInfo
             };
         }
@@ -1222,7 +1222,7 @@ export class blBot {
         return {
             ok: false,
             status: res.statusCode ?? null,
-            message: res.statusMessage ?? "Unknown error"
+            statusMessage: res.statusMessage ?? "Unknown error"
         }
 
     }
@@ -1240,15 +1240,15 @@ export class blBot {
         if (res.ok) {
             return {
                 ok: true,
-                status: res.statusCode ?? null,
+                statusCode: res.statusCode ?? null,
                 result: res.result.result as ChatMember[]
             };
         }
 
         return {
             ok: false,
-            status: res.statusCode ?? null,
-            message: res.statusMessage ?? "Unknown error"
+            statusCode: res.statusCode ?? null,
+            statusMessage: res.statusMessage ?? "Unknown error"
         };
     }
     /**
@@ -1263,15 +1263,15 @@ export class blBot {
         if (res?.ok) {
             return {
                 ok: true,
-                status: res.statusCode ?? null,
-                result: res.result as Number
+                statusCode: res.statusCode ?? null,
+                result: res.result as number
             };
         }
 
         return {
             ok: false,
-            status: res.statusMessage ?? null,
-            message: res.statusMessage ?? "Unknown error"
+            statusCode: res.statusCode ?? null,
+            statusMessage: res.statusMessage ?? "Unknown error"
         };
     }
     /**
@@ -1331,7 +1331,7 @@ export class blBot {
 
             const responseJson = await response.json();
 
-            return { ok: true, statusCode: response.status, result: responseJson.result as Boolean };
+            return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
 
         }
         catch (error: any) {
@@ -1376,25 +1376,20 @@ export class blBot {
          * @returns A Promise resolving to an API response object on success, or an error object on failure.
      */
     async unpinAllChatMessages(chat_id: string | number) {
-        if (!chat_id) {
-            throw new Error("the chat_id is empty!");
+        const res = await this.FunctionsWithChatIdOnly(chat_id, "unpinAllChatMessages");
+        if (res?.ok) {
+            return {
+                ok: true,
+                statusCode: res.statusCode ?? null,
+                result: res.result as boolean
+            };
         }
 
-        try {
-            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/unpinAllChatMessages?chat_id=${chat_id}`));
-
-            if (!response.ok) {
-                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
-            }
-
-            const responseJson = await response.json();
-
-            return { ok: true, statusCode: response.status, result: responseJson };
-
-        }
-        catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
-        }
+        return {
+            ok: false,
+            statusCode: res.statusCode ?? null,
+            statusMessage: res.statusMessage ?? "Unknown error"
+        };
     }
     /**
          * Edits the name of a chat. Limits:
@@ -1414,8 +1409,6 @@ export class blBot {
         if (!title) {
             throw new Error("the title is empty!");
         }
-
-
 
         try {
             const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/setChatTitle?chat_id=${chat_id}&title=${title}`));
@@ -1440,21 +1433,20 @@ export class blBot {
          * @returns A Promise resolving to an API response object on success, or an error object on failure.
      */
     async deleteChatPhoto(chat_id: string | number) {
-        try {
-            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/deleteChatPhoto?chat_id=${chat_id}`));
-
-            if (!response.ok) {
-                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
-            }
-
-            const responseJson = await response.json();
-
-            return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
-
+        const res = await this.FunctionsWithChatIdOnly(chat_id, "deleteChatPhoto");
+        if (res?.ok) {
+            return {
+                ok: true,
+                statusCode: res.statusCode ?? null,
+                result: res.result as number
+            };
         }
-        catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
-        }
+
+        return {
+            ok: false,
+            statusCode: res.statusCode ?? null,
+            statusMessage: res.statusMessage ?? "Unknown error"
+        };
     }
     /**
          * Creates an invite link for a chat. Requires administrator privileges.
@@ -1466,21 +1458,20 @@ export class blBot {
          * @returns A Promise resolving to an InviteLink object on success, or an error object on failure.
      */
     async createChatInviteLink(chat_id: string | number) {
-        try {
-            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/createChatInviteLink?chat_id=${chat_id}`));
-
-            if (!response.ok) {
-                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
-            }
-
-            const responseJson = await response.json();
-
-            return { ok: true, statusCode: response.status, result: responseJson.result as Map<string, string | number> };
-
+        const res = await this.FunctionsWithChatIdOnly(chat_id, "createChatInviteLink");
+        if (res?.ok) {
+            return {
+                ok: true,
+                statusCode: res.statusCode ?? null,
+                result: res.result as InviteLinkInfo
+            };
         }
-        catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
-        }
+
+        return {
+            ok: false,
+            statusCode: res.statusCode ?? null,
+            statusMessage: res.statusMessage ?? "Unknown error"
+        };
     }
 
     /**
@@ -1491,6 +1482,13 @@ export class blBot {
          * @returns A Promise resolving to an InviteLink object on success, or an error object on failure.
      */
     async revokeChatInviteLink(chat_id: string | number, invite_link: string) {
+        if (!chat_id) {
+            throw new Error("the chat_id is empty!");
+        }
+        if (!invite_link) {
+            throw new Error("the invite_link is empty!");
+        }
+
         try {
             const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/revokeChatInviteLink?chat_id=${chat_id}&invite_link=${invite_link}`));
 
@@ -1500,7 +1498,7 @@ export class blBot {
 
             const responseJson = await response.json();
 
-            return { ok: true, statusCode: response.status, result: responseJson.result as Map<string, string | number> };
+            return { ok: true, statusCode: response.status, result: responseJson.result as InviteLinkInfo };
 
         }
         catch (error: any) {
@@ -1514,21 +1512,20 @@ export class blBot {
          * @returns A Promise resolving to a string (the invite link) on success, or an error object on failure.
      */
     async exportChatInviteLink(chat_id: string | number) {
-        try {
-            const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/exportChatInviteLink?chat_id=${chat_id}`));
-
-            if (!response.ok) {
-                return { ok: false, statusCode: response.status, statusMessage: response.statusText };
-            }
-
-            const responseJson = await response.json();
-
-            return { ok: true, statusCode: response.status, result: responseJson.result as Map<string, string | number> };
-
+        const res = await this.FunctionsWithChatIdOnly(chat_id, "exportChatInviteLink");
+        if (res?.ok) {
+            return {
+                ok: true,
+                statusCode: res.statusCode ?? null,
+                result: res.result as string
+            };
         }
-        catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
-        }
+
+        return {
+            ok: false,
+            statusCode: res.statusCode ?? null,
+            statusMessage: res.statusMessage ?? "Unknown error"
+        };
     }
     /**
          * Edits text of messages. On success, returns the edited Message.
@@ -1536,9 +1533,6 @@ export class blBot {
          * @param chat_id - Unique identifier for the target chat or username of the target channel (in the format @channelusername).
          * @param message_id - Identifier of the message to be edited.
          * @param text - New text of the message.
-         * @param reply_markup - Optional. Inline keyboard attached to the message.
-         * @param parse_mode - Optional. Send "MarkdownV2" or "HTML" if you want Telegram to format the message.
-         * @param disable_web_page_preview - Optional. Disables link previews for links in this message.
          * @returns A Promise resolving to the edited Message object on success, or an error object on failure.
     */
     async editMessageText(
@@ -1574,7 +1568,7 @@ export class blBot {
 
             const responseJson = await response.json();
 
-            return { ok: true, statusCode: response.status, result: responseJson.result };
+            return { ok: true, statusCode: response.status, result: responseJson.result as Message };
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
@@ -1613,7 +1607,7 @@ export class blBot {
                 formData.append("caption", `${caption}`);
             }
             if (reply_markup) {
-                formData.append("caption", `${JSON.stringify(reply_markup)}`);
+                formData.append("reply_markup", JSON.stringify(reply_markup));
             }
 
             const response = await fetch(
@@ -1630,7 +1624,7 @@ export class blBot {
 
             const responseJson = await response.json();
 
-            return { ok: true, statusCode: response.status, result: responseJson.result };
+            return { ok: true, statusCode: response.status, result: responseJson.result as Message };
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`)
@@ -1700,7 +1694,7 @@ export class blBot {
                 throw new Error("the chat_id is empty!");
             }
             if (!message_id) {
-                throw new Error("the user_id is empty!");
+                throw new Error("the message_id is empty!");
             }
             if (!reply_markup) {
                 throw new Error("the reply_markup is empty!");
@@ -1708,7 +1702,7 @@ export class blBot {
             const formData = new FormData();
             formData.append("chat_id", `${chat_id}`);
             formData.append("message_id", `${message_id}`);
-            formData.append("reply_markup", `${JSON.stringify(reply_markup)}`);
+            formData.append("reply_markup", JSON.stringify(reply_markup));
             const response = await fetch(
                 encodeURI(`https://${this.baseUrl}/bot${this.token}/editMessageReplyMarkup`),
                 {
@@ -1719,12 +1713,12 @@ export class blBot {
             if (!response.ok) {
 
                 return {
-                    ok: false, status: `${response.status}`, message: `${response.statusText}`
+                    ok: false, statusCode: response.status, statusMessage: response.statusText
                 };
             }
             const responseJson = await response.json();
 
-            return { ok: true, statusCode: response.status, result: responseJson }
+            return { ok: true, statusCode: response.status, result: responseJson.result as Message }
 
         } catch (error: any) {
             throw new Error(`an error occur: ${error.message}`);
@@ -1815,7 +1809,7 @@ export class blBot {
             formData.append("user_id", `${user_id}`);
             formData.append("name", `${name}`);
             formData.append("title", `${title}`);
-            formData.append("sticker", `${JSON.stringify(sticker)}`);
+            formData.append("sticker", JSON.stringify(sticker));
 
             const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/createNewStickerSet`),
                 {
@@ -1864,7 +1858,7 @@ export class blBot {
 
             formData.append("user_id", `${user_id}`);
             formData.append("name", `${name}`);
-            formData.append("sticker", `${JSON.stringify(sticker)}`);
+            formData.append("sticker", JSON.stringify(sticker));
             const response = await fetch(encodeURI(`https://${this.baseUrl}/bot${this.token}/addStickerToSet`),
                 {
                     method: "POST",
@@ -1882,8 +1876,6 @@ export class blBot {
             throw new Error(`an error occur: ${error.message}`)
         }
     }
-
-
 
 
     // ----------------------->WALLET SECTION START FROM HERE<-----------------------
