@@ -13,3 +13,8 @@ Designed with flexibility in mind, blBot is ready to grow with your needs.
 - Write your own code
 
 **for more click <a href="https://github.com/Ali-googoojani/blBot/blob/main/docs.md">here</a>** 
+
+
+# Attention
+
+> ⚠️ **Note: Since this library is not yet published on npm, please import it locally using the path: `import { ... } from './blBot';` **
