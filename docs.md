@@ -4,23 +4,23 @@
 This guide is your entry point to building efficient, lightweight bots for Telegram and Bale. We’ll start with the essentials: importing the `blBot` class.
 
 ```typescript
-import {blBot} from "blBot";
+import {blBot} from "./blBot";
 ```
 
 After importing `blBot`, create an instance of the `blBot` class.
 
 ```typescript
-import {blBot} from "blBot";
+import {blBot} from "./blBot";
 
 const bot=new blBot({your_bot_token});
 ```
 
-> ⚠️ Notice: This tutorial focuses exclusively on the `Polling` method for bot interaction.
+> ⚠️ Note: This tutorial focuses exclusively on the `Polling` method for bot interaction.
 
 Next, call the `Polling` method on your bot instance. This method requires an asynchronous function as an argument.
 
 ```typescript
-import {blBot} from "blBot";
+import {blBot} from "./blBot";
 
 const bot=new blBot({your_bot_token});
 
@@ -32,7 +32,7 @@ bot.Polling(async(update)=>{
 Inside the asynchronous function you provided to the `Polling` method, you can write your custom bot logic. For instance:
 
 ```typescript
-import {blBot} from "blBot";
+import {blBot} from "./blBot";
 
 const bot = new blBot({your_bot_token})
 
@@ -59,7 +59,7 @@ bot.Polling(async (update) => {
 Every update the bot receives has a type, and we should manage it accordingly. Based on the Message structure, the key fields that indicate the type of update and its content include: `text` for text messages, `animation` for animations, `audio` for audio files, `document` for documents, `photo` for photos, `sticker` for stickers, `video` for videos, `voice` for voice messages, `caption` for captions associated with media, `contact` for shared contacts, `location` for shared locations, `new_chat_members` for new members joining a chat, `left_chat_member` for members leaving a chat, `invoice` for invoices, `successful_payment` for payment `confirmations`, `web_app_data` for data from web apps, and `reply_markup` which often indicates interactive elements like buttons.
 
 So, the `Message` class includes all of these types, and we can handle them accordingly.
-> ⚠️ **Notice**: The Update class contains a `Message` object.
+> ⚠️ **Note**: The Update class contains a `Message` object.
 
 ```typescript
 import { Animation } from "./Animation";
@@ -181,7 +181,7 @@ export class Message {
 
 We just need to use `Optional Chaining` to know message type.
 ```typescript
-import {blBot} from "blBot";
+import {blBot} from "./blBot";
 
 const bot = new blBot({your_bot_token})
 
@@ -205,7 +205,7 @@ bot.Polling(async (update) => {
 If a message includes `reply_markup` and the user interacts with its buttons, you should use `Optional chaining` to safely access the relevant data.
 
 ```typescript
-import {blBot} from "blBot";
+import {blBot} from "./blBot";
 
 const bot = new blBot({your_bot_token})
 
@@ -240,7 +240,7 @@ bot.Polling(async (update) => {
 To handle bot inputs, you can use regular expressions (`regex`). To do so, call the `testRegex` function from `blBot`.
 
 ```typescript
-import {blBot} from "blBot";
+import {blBot} from "./blBot";
 
 const bot = new blBot({your_bot_token})
 
@@ -260,7 +260,7 @@ To send media, `blBot` provides dedicated methods for each media type, including
 > ℹ️ The `sendAnimation` method is used for sending silent videos, such as GIFs.
 
 ```typescript
-import {blBot} from "blBot";
+import {blBot} from "./blBot";
 
 const bot = new blBot({your_bot_token});
 
@@ -339,7 +339,7 @@ InputMediaVideo,
 InputMediaDocument,
 InputMediaAudio,
 InputMediaAnimation,
-InputMedia} from "blBot";
+InputMedia} from "./blBot";
 
 const bot = new blBot({your_bot_token})
 
@@ -398,7 +398,7 @@ bot.Polling(async (update) => {
 })
 ```
 
-> ⚠️ Notice: You only need to provide content for one `caption` field. Do not fill out all `caption` fields as demonstrated in the examples.
+> ⚠️ Note: You only need to provide content for one `caption` field. Do not fill out all `caption` fields as demonstrated in the examples.
 
 #### InlineKeyboardButton / ReplyKeyboardMarkup
 
@@ -418,7 +418,7 @@ Inline buttons streamline the user experience by offering clear, tappable choice
 
 ##### InlineKeyboard
 ```typescript
-import {blBot,InlineKeyboardButton,InlineKeyBoard} from "blBot";
+import {blBot,InlineKeyboardButton,InlineKeyBoard} from "./blBot";
 
 const bot = new blBot({your_bot_token});
 
@@ -453,7 +453,7 @@ bot.Polling(async (update) => {
 ```
 ##### ReplyKeyboardMarkup
 ```typescript
-import {blBot, KeyboardButton, ReplyKeyboardMarkup} from "./dist";
+import {blBot, KeyboardButton, ReplyKeyboardMarkup} from "./blBot";
 
 const bot = new blBot({your_bot_token});
 
@@ -483,13 +483,40 @@ bot.Polling(async (update) => {
     }
 });
 ```
+## Download File
+To download files from Telegram or Bale, you’ll need the `file_id` and `file_path`.
+This unique identifier is essential for accessing and retrieving the file from these platforms.
+
+```typescript
+import { blBot } from "./blBot"
+
+const bot = new blBot("");
+
+
+bot.Polling(async (update) => {
+    if (update.message?.document?.file_id) {
+        if (update.message?.photo) {
+            const res = await bot.getFile(update.message?.document?.file_id);
+            if (res.result?.file_path) {
+                const filename = "newImg";
+                const downloadResult = await bot.downloadFile(`downloads/${filename}.jpg`, res.result?.file_path);
+                if (downloadResult.ok) {
+                    if (update.message.chat?.id) {
+                        bot.sendMessage(update.message.chat?.id,`the File saved at ${downloadResult.path}`)
+                    }
+                }
+            }
+        }
+    }
+})
+```
 
 ## Error Handling
 
 This part is all about what might go wrong when you’re using our library and how to deal with it smoothly. We’ll walk you through the kinds of hiccups you might see, what the error messages will look like, and the best ways to catch and handle them so your application keeps running without a hitch. Think of it as your guide to handling the unexpected!.
 
 ```typescript
-import {blBot} from "blBot";
+import {blBot} from "./blBot";
 
 const bot = new blBot({your_bot_token})
 
@@ -512,5 +539,11 @@ You can detect errors by checking `res.ok`:
 - If `res.ok` is `true`, the request was successful.
 - If `res.ok` is `false`, an error occurred.
 
-> ⚠️ Notice: throwing an error does not stop the bot.
+> ⚠️ Note: throwing an error does not stop the bot.
 If you want the bot to stop after throwing an error, add `process.exit(0);` after the `throw` statement.
+
+
+
+# Attention
+
+> ⚠️ **Note: Since this library is not yet published on npm, please import it locally using the path: `import { ... } from './blBot';` **

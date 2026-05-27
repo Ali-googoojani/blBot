@@ -1,6 +1,15 @@
-# SetUp & Installation
+# Introduction
+blBot is a simple and powerful bot built to make tasks easier and faster.
+It helps automate actions, improve workflow, and save time.
+Designed with flexibility in mind, blBot is ready to grow with your needs.
 
-> 1-`npm i`
-> 2- `npm run build`
-> 3- blBot folder create
-> 4-write your own code
+# SetUp & Installation
+**just follow these steps:**
+- Type cd `repo directory path`
+- Type `npm i`
+- Type `npm run build`
+- Creates `blBot folder`
+- Import lib
+- Write your own code
+
+**for more click <a href="https://github.com/Ali-googoojani/blBot/blob/main/docs.md">here</a>** 
