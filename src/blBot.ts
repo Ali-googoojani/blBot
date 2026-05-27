@@ -21,6 +21,7 @@ import { Message } from "./Entities/Message";
 import { User } from "./Entities/User";
 import { File } from "./Entities/File";
 import { InviteLinkInfo } from "./Entities/InviteLink";
+import logger from "./logger";
 /**
  * Bale Bot Client
  * 
@@ -84,7 +85,7 @@ export class blBot {
             this.running++;
             Promise.resolve()
                 .then(() => main(item))
-                .catch((err) => console.error("main error:", err))
+                .catch((err) => { logger.error("Error in processing update: " + err) })
                 .finally(() => {
                     this.running--;
                     this.pump(main);
@@ -101,8 +102,9 @@ export class blBot {
          * 
          * @param main - Async handler function for processing each update
     */
-    async Polling(main: (message: Update) => Promise<void>, limit: number = 100, timeout: number = 15) {
+    async Polling(main: (update: Update) => Promise<void>, limit: number = 100, timeout: number = 15) {
         if (!this.updateId) this.updateId = 0;
+        logger.info("The bot is started");
         while (true) {
             // console.log("last updateId:", this.updateId);
 
@@ -114,17 +116,20 @@ export class blBot {
                 const json: Result = await res.json();
 
                 if (json.ok && Array.isArray(json.result) && json.result.length) {
+                    logger.info("Bot received updates");
                     for (const item of json.result) {
                         this.updateId = item.update_id + 1;
 
                         await this.enqueue(item as Update, main);
+
                     }
                 }
             } catch (error: any) {
                 console.error("Polling error:", error);
+                logger.error("Error in processing update: " + error);
             }
 
-            await this.sleep(2000);
+            await this.sleep(2500);
         }
     }
 
@@ -151,7 +156,7 @@ export class blBot {
 
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -171,7 +176,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -191,7 +196,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as WebhookInfo }
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -203,16 +208,16 @@ export class blBot {
         * @param regex - Regular expression pattern
         * @param text - Text to test against
     */
-    async testRegex(regex: string, text: string): Promise<Record<string, any>> {
+    async testRegex(regex: string, text: string): Promise<boolean> {
         if (!regex || !text) {
             throw new Error("regex or text is empty!")
         }
         try {
             const regExp = new RegExp(regex);
             const match = regExp.test(text);
-            return { ok: true, result: `${match}` }
+            return match;
         } catch (error: any) {
-            throw new Error(`an error occur:${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -233,7 +238,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as User }
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -279,7 +284,7 @@ export class blBot {
 
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
 
         }
 
@@ -316,7 +321,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as Message }
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -352,7 +357,7 @@ export class blBot {
         }
         catch (error: any) {
 
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
     /**
@@ -455,7 +460,7 @@ export class blBot {
                 throw new Error(`Invalid JSON response from server`);
             }
         } catch (error: any) {
-            throw new Error(`an error occur ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -471,6 +476,7 @@ export class blBot {
          * @param reply_markup - Optional custom keyboard markup.
          * @returns A Promise resolving to an API response object, or throws an error.
     */
+   
     async sendPhoto(
         chat_id: string | number,
         from_chat_id: string | number,
@@ -647,7 +653,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as Message[] }
         }
         catch (error: any) {
-            throw new Error(`an error occur:${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -714,7 +720,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as Message }
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
     /**
@@ -777,7 +783,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as Message }
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
     /**
@@ -816,7 +822,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message} `);
+            throw new Error(`${error.message} `);
         }
     }
     /**
@@ -850,7 +856,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as File }
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -892,7 +898,7 @@ export class blBot {
             };
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -926,7 +932,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
     /**
@@ -956,7 +962,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
     /**
@@ -989,7 +995,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -1021,7 +1027,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -1074,7 +1080,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -1122,7 +1128,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean }
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
 
     }
@@ -1149,7 +1155,7 @@ export class blBot {
 
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
     }
     /**
@@ -1175,7 +1181,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result };
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
     }
 
@@ -1303,7 +1309,7 @@ export class blBot {
 
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
     }
     /**
@@ -1335,7 +1341,7 @@ export class blBot {
 
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
     }
     /**
@@ -1366,7 +1372,7 @@ export class blBot {
 
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
     }
     /**
@@ -1422,7 +1428,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
     }
 
@@ -1502,7 +1508,7 @@ export class blBot {
 
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
     }
     /**
@@ -1571,7 +1577,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as Message };
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
 
     }
@@ -1627,7 +1633,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as Message };
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
 
     }
@@ -1672,7 +1678,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
 
     }
@@ -1721,7 +1727,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as Message }
 
         } catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`);
+            throw new Error(`${error.message}`);
         }
     }
 
@@ -1770,7 +1776,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as File };
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
     }
 
@@ -1825,7 +1831,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
     }
 
@@ -1873,7 +1879,7 @@ export class blBot {
             return { ok: true, statusCode: response.status, result: responseJson.result as boolean };
         }
         catch (error: any) {
-            throw new Error(`an error occur: ${error.message}`)
+            throw new Error(`${error.message}`)
         }
     }
 
