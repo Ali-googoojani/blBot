@@ -2,6 +2,7 @@ import { Animation } from "./Animation";
 import { Audio } from "./Audio";
 import { Chat } from "./Chat";
 import { Contact } from "./Contact";
+import { Document } from "./Document";
 import { InlineKeyboardButton } from "./InlineKeyboardButton";
 import { Invoice } from "./Invoice";
 import { Location } from "./Location";

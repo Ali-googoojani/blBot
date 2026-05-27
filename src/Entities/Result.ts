@@ -1,5 +1,4 @@
 import { Message } from "./Message";
-import { MessageAndUpdateId } from "./MessageAndUpdateId";
 import { Update } from "./Update";
 
 export class Result {
