@@ -1,6 +1,6 @@
 import { InlineKeyboardButton } from '../../blBot';
 import { InlineKeyBoard } from '../../blBot';
-import {blBot} from "../../blBot";
+import { blBot } from "../../blBot";
 import { Update } from "../../blBot";
 import { addBlock, blockChecker } from './utlis';
 import { USERID, BOT_TOKEN } from './botSetting';
@@ -44,7 +44,7 @@ bot.Polling(async (message: Update) => {
             const messageId = message.message.message_id;
             // /start
             if (messageText?.startsWith("/start")) {
-                const res=await bot.sendMessage(chatId, `سلام خوش آمدید به ربات\nاگر پیامی دارید همینجا بفرستید.`);
+                const res = await bot.sendMessage(chatId, `سلام خوش آمدید به ربات\nاگر پیامی دارید همینجا بفرستید.`);
                 console.log(res.result?.message_id);
                 return;
             }
@@ -56,8 +56,10 @@ bot.Polling(async (message: Update) => {
 
                     // ارسال پاسخ ادمین به کاربر
                     // اگر bot.copyMessage داری و می‌خواهی متن/عکس/فایل کامل کپی شود:
-                    const res = await bot.copyMessage(target.userId, chatId, messageId);
-                    console.log(res);
+                    if (messageId) {
+                        const res = await bot.copyMessage(target.userId, chatId, messageId);
+                        console.log(res);
+                    }
                     // علامت‌گذاری thread به عنوان پاسخ‌داده‌شده
                     const state = threads.get(target.key);
                     if (state) {
@@ -90,7 +92,7 @@ bot.Polling(async (message: Update) => {
 
             const showInfoButton: InlineKeyboardButton = {
                 text: "مشخصات کاربر ℹ️",
-                callback_data: `show#${userId}#${message?.message?.from?.first_name || "بدون نام"}#${message?.message?.from?.last_name || "بدون نام"}#${message?.message?.from?.username || "بدون یوزرنیم"}`
+                callback_data: `show#${userId}#${message?.message?.from?.frist_name || "بدون نام"}#${message?.message?.from?.last_name || "بدون نام"}#${message?.message?.from?.username || "بدون یوزرنیم"}`
             };
 
             const replyButton: InlineKeyboardButton = {
@@ -109,16 +111,16 @@ bot.Polling(async (message: Update) => {
                 undefined,
                 keyboardForAdmin
             );
-
-            // ذخیره thread جدا برای همین پیام
-            const key = makeKey(userId, messageId);
-            threads.set(key, {
-                userId,
-                messageId,
-                chatId,
-                isWaitingForResponse: false
-            });
-
+            if (messageId) {
+                // ذخیره thread جدا برای همین پیام
+                const key = makeKey(userId, messageId);
+                threads.set(key, {
+                    userId,
+                    messageId,
+                    chatId,
+                    isWaitingForResponse: false
+                });
+            }
             // تایید به کاربر
             await bot.sendMessage(chatId, "✅ پیام شما دریافت شد و برای مدیر ارسال گردید.");
         }
