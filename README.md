@@ -17,4 +17,4 @@ Designed with flexibility in mind, blBot is ready to grow with your needs.
 
 # Attention
 
-> ⚠️ **Note: Since this library is not yet published on npm, please import it locally using the path: `import { ... } from './blBot';` **
+> ⚠️ **Note: Since this library is not yet published on npm, please import it locally using the path: `import { ... } from './blBot';`**
