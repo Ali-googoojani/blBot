@@ -1,7 +1,7 @@
-import { InlineKeyboardButton } from '../dist';
-import { InlineKeyBoard } from '../dist';
-import {blBot} from "../dist";
-import { Update } from "../dist";
+import { InlineKeyboardButton } from '../../blBot';
+import { InlineKeyBoard } from '../../blBot';
+import {blBot} from "../../blBot";
+import { Update } from "../../blBot";
 import { addBlock, blockChecker } from './utlis';
 import { USERID, BOT_TOKEN } from './botSetting';
 
