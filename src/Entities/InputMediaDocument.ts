@@ -3,7 +3,7 @@ import { InputFile } from "./InputFile";
 
 export class InputMediaDocument {
     public type: string;
-    public media: string;
+    public media: string | InputFile;
     public thumbnail: InputFile | string;
     public caption: string;
 

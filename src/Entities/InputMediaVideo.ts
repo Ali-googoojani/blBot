@@ -2,7 +2,7 @@ import { InputFile } from "./InputFile";
 
 export class InputMediaVideo {
     public type: string;
-    public media: string;
+    public media: string | InputFile;
     public thumbnail: InputFile | string;
     public caption: string;
     public width: number;
