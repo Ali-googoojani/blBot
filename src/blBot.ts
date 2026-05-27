@@ -24,7 +24,7 @@ import { InviteLinkInfo } from "./Entities/InviteLink";
 import logger from "./logger";
 /**
  * Bale Bot Client
- * 
+ * Author:Ali gougoujani
  * A lightweight client for interacting with Bale Bot API.
  * Supports polling, webhook management, and basic messaging.
  */
