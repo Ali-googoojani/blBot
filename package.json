@@ -1,0 +1,27 @@
+{
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3"
+  },
+  "name": "blebot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./blBot/index.js",
+  "module": "./blBot/index.mjs",
+  "types": "./blBot/index.d.ts",
+  "dependencies": {
+    "undici-types": "^7.19.2",
+    "winston": "^3.19.0"
+  },
+  "scripts": {
+    "build": "tsup"
+  },
+  "keywords": [
+    "Bale Bot",
+    "Telegram Bot"
+  ],
+  "author": "Ali Gougoujani",
+  "license": "MIT",
+  "type": "module"
+}
