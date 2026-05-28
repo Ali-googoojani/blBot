@@ -36,7 +36,7 @@ blbot.Polling(async (update: Update) => {
         if (update.message.text.split(" ")[0] === "/img") {
             if (update.message.chat?.id && update.message.from?.id) {
 
-                const inputPhotoArray: InputMediaPhoto[] = [{ type: "photo", caption: "helloi", media: "https://cdn.soft98.ir/K-Lite.jpg" }, { type: "photo", caption: "helloi", media: "https://cdn.soft98.ir/K-Lite.jpg" }];
+                const inputPhotoArray: InputMediaPhoto[] = [{ type: "photo", caption: "helloi", media: "https://cdn.soft98.ir/K-Lite.jpg" }, { type: "photo", caption: "", media: "https://cdn.soft98.ir/K-Lite.jpg" }];
 
                 const res = await blbot.sendMediaGroup(update.message.chat.id, inputPhotoArray);
                 console.log({ message: res.statusMessage, status: res.statusCode });

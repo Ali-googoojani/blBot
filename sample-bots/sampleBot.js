@@ -66,7 +66,7 @@ blbot.Polling(function (update) { return __awaiter(void 0, void 0, void 0, funct
             case 6:
                 if (!(update.message.text.split(" ")[0] === "/img")) return [3 /*break*/, 9];
                 if (!(((_g = update.message.chat) === null || _g === void 0 ? void 0 : _g.id) && ((_h = update.message.from) === null || _h === void 0 ? void 0 : _h.id))) return [3 /*break*/, 8];
-                inputPhotoArray = [{ type: "photo", caption: "helloi", media: "https://cdn.soft98.ir/K-Lite.jpg" }, { type: "photo", caption: "helloi", media: "https://cdn.soft98.ir/K-Lite.jpg" }];
+                inputPhotoArray = [{ type: "photo", caption: "helloi", media: "https://cdn.soft98.ir/K-Lite.jpg" }, { type: "photo", caption: "", media: "https://cdn.soft98.ir/K-Lite.jpg" }];
                 return [4 /*yield*/, blbot.sendMediaGroup(update.message.chat.id, inputPhotoArray)];
             case 7:
                 res = _k.sent();
