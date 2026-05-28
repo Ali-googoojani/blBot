@@ -23,5 +23,5 @@
   ],
   "author": "Ali Gougoujani",
   "license": "MIT",
-  "type": "module"
+  "type": "commonjs"
 }
