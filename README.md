@@ -5,7 +5,7 @@ Designed with flexibility in mind, blBot is ready to grow with your needs.
 
 # SetUp & Installation
 **just follow these steps:**
-- Type cd `repo directory path`
+- Type `cd {repo_directory_path}`
 - Type `npm i`
 - Type `npm run build`
 - Creates `blBot folder`
