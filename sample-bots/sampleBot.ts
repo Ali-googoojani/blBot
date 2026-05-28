@@ -14,7 +14,7 @@ blbot.Polling(async (update: Update) => {
             if (update.message.chat?.id && update.message.message_id) {
 
                 await blbot.sendMessage(update.message.chat.id,
-                    `سلام دوست خوب من!
+                    `Hello my friend
                     `
                     , update.message.message_id
                 );
@@ -23,6 +23,7 @@ blbot.Polling(async (update: Update) => {
             }
             return;
         }
+        // get chat info and return chat title
         if (update.message.text.split(" ")[0] === "/getInfo") {
             if (update?.message?.chat?.id) {
                 const res = await blbot.getChat(update.message.chat.id)
@@ -32,17 +33,17 @@ blbot.Polling(async (update: Update) => {
             }
 
         }
-
+        // return two images as media group
         if (update.message.text.split(" ")[0] === "/img") {
             if (update.message.chat?.id && update.message.from?.id) {
 
-                const inputPhotoArray: InputMediaPhoto[] = [{ type: "photo", caption: "helloi", media: "https://cdn.soft98.ir/K-Lite.jpg" }, { type: "photo", caption: "", media: "https://cdn.soft98.ir/K-Lite.jpg" }];
+                const inputPhotoArray: InputMediaPhoto[] = [{ type: "photo", caption: "images", media: "https://cdn.soft98.ir/K-Lite.jpg" }, { type: "photo", caption: "", media: "https://cdn.soft98.ir/K-Lite.jpg" }];
 
-                const res = await blbot.sendMediaGroup(update.message.chat.id, inputPhotoArray);
-                console.log({ message: res.statusMessage, status: res.statusCode });
+                await blbot.sendMediaGroup(update.message.chat.id, inputPhotoArray);
             }
             return;
         }
+        // echo any messages
         if (update.message.chat?.id && update.message.message_id) {
             await blbot.sendMessage(update.message.chat.id,
                 `${update.message.text}

@@ -39,7 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("../blBot/index");
 var blbot = new index_1.blBot("808050001:dbmLxFSLG2Pfy767Fd2M6UcBG6_XGZrjMAE");
 blbot.Polling(function (update) { return __awaiter(void 0, void 0, void 0, function () {
-    var res, inputPhotoArray, res;
+    var res, inputPhotoArray;
     var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     return __generator(this, function (_k) {
         switch (_k.label) {
@@ -47,7 +47,7 @@ blbot.Polling(function (update) { return __awaiter(void 0, void 0, void 0, funct
                 if (!((_a = update.message) === null || _a === void 0 ? void 0 : _a.text)) return [3 /*break*/, 11];
                 if (!(update.message.text.split(" ")[0] === "/start")) return [3 /*break*/, 3];
                 if (!(((_b = update.message.chat) === null || _b === void 0 ? void 0 : _b.id) && update.message.message_id)) return [3 /*break*/, 2];
-                return [4 /*yield*/, blbot.sendMessage(update.message.chat.id, "\u0633\u0644\u0627\u0645 \u062F\u0648\u0633\u062A \u062E\u0648\u0628 \u0645\u0646!\n                    ", update.message.message_id)];
+                return [4 /*yield*/, blbot.sendMessage(update.message.chat.id, "Hello my friend\n                    ", update.message.message_id)];
             case 1:
                 _k.sent();
                 _k.label = 2;
@@ -66,11 +66,10 @@ blbot.Polling(function (update) { return __awaiter(void 0, void 0, void 0, funct
             case 6:
                 if (!(update.message.text.split(" ")[0] === "/img")) return [3 /*break*/, 9];
                 if (!(((_g = update.message.chat) === null || _g === void 0 ? void 0 : _g.id) && ((_h = update.message.from) === null || _h === void 0 ? void 0 : _h.id))) return [3 /*break*/, 8];
-                inputPhotoArray = [{ type: "photo", caption: "helloi", media: "https://cdn.soft98.ir/K-Lite.jpg" }, { type: "photo", caption: "", media: "https://cdn.soft98.ir/K-Lite.jpg" }];
+                inputPhotoArray = [{ type: "photo", caption: "images", media: "https://cdn.soft98.ir/K-Lite.jpg" }, { type: "photo", caption: "", media: "https://cdn.soft98.ir/K-Lite.jpg" }];
                 return [4 /*yield*/, blbot.sendMediaGroup(update.message.chat.id, inputPhotoArray)];
             case 7:
-                res = _k.sent();
-                console.log({ message: res.statusMessage, status: res.statusCode });
+                _k.sent();
                 _k.label = 8;
             case 8: return [2 /*return*/];
             case 9:
