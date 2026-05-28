@@ -8,7 +8,7 @@ import { USERID, BOT_TOKEN } from './botSetting';
 const bot = new blBot(BOT_TOKEN);
 
 /**
- * هر پیام کاربر یک رکورد جدا دارد
+ * Each user message has a separate record.
  * key = `${userId}:${messageId}`
  */
 type ThreadState = {
@@ -22,7 +22,7 @@ type ThreadState = {
 const threads = new Map<string, ThreadState>();
 
 /**
- * فقط برای نگه‌داری اینکه ادمین الان می‌خواهد به کدام thread جواب بدهد
+ * Only to keep track of which thread the admin currently wants to reply to.
  */
 let activeReplyTarget: {
     key: string;
@@ -44,59 +44,59 @@ bot.Polling(async (message: Update) => {
             const messageId = message.message.message_id;
             // /start
             if (messageText?.startsWith("/start")) {
-                const res = await bot.sendMessage(chatId, `سلام خوش آمدید به ربات\nاگر پیامی دارید همینجا بفرستید.`);
+                const res = await bot.sendMessage(chatId, `Hello, welcome to the bot\nIf you have a message, send it here.`);
                 console.log(res.result?.message_id);
                 return;
             }
 
-            // پیام‌های ادمین
+            // Admin's Messages
             if (userId === USERID) {
                 if (activeReplyTarget) {
                     const target = activeReplyTarget;
 
-                    // ارسال پاسخ ادمین به کاربر
-                    // اگر bot.copyMessage داری و می‌خواهی متن/عکس/فایل کامل کپی شود:
+                    // Send the admin's reply to the user
+                    // If you have bot.copyMessage and want to copy the full text/photo/file:
                     if (messageId) {
                         const res = await bot.copyMessage(target.userId, chatId, messageId);
                         console.log(res);
                     }
-                    // علامت‌گذاری thread به عنوان پاسخ‌داده‌شده
+                    // Mark the thread as replied to.
                     const state = threads.get(target.key);
                     if (state) {
                         state.isWaitingForResponse = false;
                         threads.set(target.key, state);
                     }
 
-                    await bot.sendMessage(chatId, `✅ پیام شما برای کاربر ${target.userId} ارسال شد.`);
+                    await bot.sendMessage(chatId, `✅ Your message has been sent to user ${target.userId}.`);
 
-                    // ریست هدف فعال
+                    // Reset active goal
                     activeReplyTarget = null;
                 } else {
-                    await bot.sendMessage(chatId, `لطفاً ابتدا روی دکمه "پاسخ" مربوط به یکی از پیام‌ها بزنید.`);
+                    await bot.sendMessage(chatId, `Please click the "Reply" button on one of the messages first.`);
                 }
                 return;
             }
 
-            // بررسی بلاک بودن کاربر
+            // Check if the user is blocked
             const isBlocked = await blockChecker(userId);
             if (isBlocked) {
-                await bot.sendMessage(chatId, "شما بلاک شده‌اید.");
+                await bot.sendMessage(chatId, "You have been blocked.");
                 return;
             }
 
-            // ساخت دکمه‌ها برای ادمین
+            // Create buttons for the admin
             const blockButton: InlineKeyboardButton = {
-                text: "بلاک 🚫",
+                text: "Block 🚫",
                 callback_data: `block#${userId}#${messageId}`
             };
 
             const showInfoButton: InlineKeyboardButton = {
-                text: "مشخصات کاربر ℹ️",
-                callback_data: `show#${userId}#${message?.message?.from?.frist_name || "بدون نام"}#${message?.message?.from?.last_name || "بدون نام"}#${message?.message?.from?.username || "بدون یوزرنیم"}`
+                text: "User info ℹ️",
+                callback_data: `show#${userId}#${message?.message?.from?.frist_name || "no name"}#${message?.message?.from?.last_name || "no lastname"}#${message?.message?.from?.username || "no username"}`
             };
 
             const replyButton: InlineKeyboardButton = {
-                text: "پاسخ ✍️",
+                text: "Reply ✍️",
                 callback_data: `reply#${userId}#${messageId}`
             };
 
@@ -104,15 +104,15 @@ bot.Polling(async (message: Update) => {
                 inline_keyboard: [[replyButton], [blockButton, showInfoButton]]
             };
 
-            // ارسال پیام کاربر به ادمین
+            // Send the user's message to the admin
             const forwarded = await bot.sendMessage(
                 USERID,
-                `📩 پیام جدید از ${message.message.from?.username || userId}:\n\n${messageText || '(بدون متن)'}`,
+                `📩 New Message From:${message.message.from?.username || userId}:\n\n${messageText || '(no text'}`,
                 undefined,
                 keyboardForAdmin
             );
             if (messageId) {
-                // ذخیره thread جدا برای همین پیام
+                // Save a separate thread for this message
                 const key = makeKey(userId, messageId);
                 threads.set(key, {
                     userId,
@@ -121,8 +121,8 @@ bot.Polling(async (message: Update) => {
                     isWaitingForResponse: false
                 });
             }
-            // تایید به کاربر
-            await bot.sendMessage(chatId, "✅ پیام شما دریافت شد و برای مدیر ارسال گردید.");
+            // Confirm to the user
+            await bot.sendMessage(chatId, "✅ Your message has been received and sent to the administrator.");
         }
 
         else if (message.callback_query) {
@@ -138,7 +138,7 @@ bot.Polling(async (message: Update) => {
 
             if (callbackType === "reply") {
                 if (!state) {
-                    await bot.sendMessage(chatId, "این پیام دیگر در دسترس نیست.");
+                    await bot.sendMessage(chatId, "This message is no longer available.");
                     return;
                 }
 
@@ -153,12 +153,12 @@ bot.Polling(async (message: Update) => {
                     chatId: state.chatId
                 };
 
-                await bot.sendMessage(chatId, `✍️ حالا پیام خود را بنویسید تا برای کاربر ${originalUserId} ارسال شود.`);
+                await bot.sendMessage(chatId, `✍️ Write your message ${originalUserId} `);
 
                 await bot.editMessageText(
                     chatId,
                     adminMessageId,
-                    `${message.callback_query.message?.text || ""}\n\n✅ انتخاب شد برای پاسخ`
+                    `${message.callback_query.message?.text || ""}\n\n✅ selected`
                 );
             }
 
@@ -170,30 +170,30 @@ bot.Polling(async (message: Update) => {
                         await bot.editMessageText(
                             chatId,
                             adminMessageId,
-                            `${message.callback_query.message?.text || ""}\n\n✅ کاربر بلاک شد.`
+                            `${message.callback_query.message?.text || ""}\n\n✅ Blocked`
                         );
 
-                        await bot.sendMessage(originalUserId, "شما توسط مدیر بلاک شدید.");
+                        await bot.sendMessage(originalUserId, "You are blocked");
                     } else {
-                        await bot.sendMessage(chatId, "خطا در بلاک کردن کاربر.");
+                        await bot.sendMessage(chatId, "Can't block try again");
                     }
                 } catch (error: any) {
                     console.error("Error blocking user:", error);
-                    await bot.sendMessage(chatId, "خطا در پردازش درخواست بلاک.");
+                    await bot.sendMessage(chatId, "error at blocking");
                 }
             }
 
             else if (callbackType === "show") {
-                const firstName = data[2] || "بدون نام";
-                const lastName = data[3] || "بدون نام";
-                const username = data[4] || "بدون یوزرنیم";
+                const firstName = data[2] || "no name";
+                const lastName = data[3] || "no lastname";
+                const username = data[4] || "no username";
 
                 const userInfo = `
-مشخصات کاربر:
-نام: ${firstName}
-نام خانوادگی: ${lastName}
-یوزرنیم: ${username}
-آیدی: ${originalUserId}
+User info:
+name: ${firstName}
+lastname: ${lastName}
+username: ${username}
+user_id: ${originalUserId}
                 `.trim();
 
                 await bot.sendMessage(chatId, userInfo);
@@ -204,7 +204,7 @@ bot.Polling(async (message: Update) => {
 
         try {
             if (USERID && error?.message) {
-                await bot.sendMessage(USERID, `خطای کلی در ربات رخ داد:\n${error.message}`);
+                await bot.sendMessage(USERID, `an error occur:\n${error.message}`);
             }
         } catch (e) {
             console.error("Failed to send error notification to USERID:", e);
