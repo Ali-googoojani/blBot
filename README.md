@@ -5,10 +5,12 @@ Designed with flexibility in mind, blBot is ready to grow with your needs.
 
 # SetUp & Installation
 **just follow these steps:**
-- Type `cd {repo_directory_path}`
+- `git clone https://github.com/Ali-googoojani/blBot.git`
+- open the repo dir in vscode
 - Type `npm i`
 - Type `npm run build`
 - Creates `blBot folder`
+- Create your project folder next to `blBot folder`
 - Import lib
 - Write your own code
 
