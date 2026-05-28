@@ -3,7 +3,7 @@ import { InlineKeyBoard } from '../../blBot';
 import { blBot } from "../../blBot";
 import { Update } from "../../blBot";
 import { addBlock, blockChecker } from './utlis';
-import { USERID, BOT_TOKEN } from './botSetting';
+import { ADMIN_USER_ID, BOT_TOKEN } from './botSetting';
 
 const bot = new blBot(BOT_TOKEN);
 
@@ -50,7 +50,7 @@ bot.Polling(async (message: Update) => {
             }
 
             // Admin's Messages
-            if (userId === USERID) {
+            if (userId === ADMIN_USER_ID) {
                 if (activeReplyTarget) {
                     const target = activeReplyTarget;
 
@@ -106,7 +106,7 @@ bot.Polling(async (message: Update) => {
 
             // Send the user's message to the admin
             const forwarded = await bot.sendMessage(
-                USERID,
+                ADMIN_USER_ID,
                 `📩 New Message From:${message.message.from?.username || userId}:\n\n${messageText || '(no text'}`,
                 undefined,
                 keyboardForAdmin
@@ -203,8 +203,8 @@ user_id: ${originalUserId}
         console.error("Global Error Handler:", error);
 
         try {
-            if (USERID && error?.message) {
-                await bot.sendMessage(USERID, `an error occur:\n${error.message}`);
+            if (ADMIN_USER_ID && error?.message) {
+                await bot.sendMessage(ADMIN_USER_ID, `an error occur:\n${error.message}`);
             }
         } catch (e) {
             console.error("Failed to send error notification to USERID:", e);
