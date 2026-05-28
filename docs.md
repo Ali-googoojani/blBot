@@ -542,7 +542,17 @@ You can detect errors by checking `res.ok`:
 > ⚠️ Note: throwing an error does not stop the bot.
 If you want the bot to stop after throwing an error, add `process.exit(0);` after the `throw` statement.
 
+## Convert to Telegram
 
+Change value of `BaseUrl` to `api.telegram.org` just like this
+
+```typescript
+import {blBot} from "./blBot";
+
+const bot = new blBot({your_bot_token})
+
+bot.BaseUrl="api.telegram.org";
+```
 
 # Attention
 
