@@ -36,48 +36,48 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var index_1 = require("../dist/index");
+var index_1 = require("../blBot/index");
 var blbot = new index_1.blBot("808050001:dbmLxFSLG2Pfy767Fd2M6UcBG6_XGZrjMAE");
-blbot.Polling(function (message) { return __awaiter(void 0, void 0, void 0, function () {
-    var res, res, inputPhotoArray, res;
-    var _a, _b, _c, _d, _e, _f;
-    return __generator(this, function (_g) {
-        switch (_g.label) {
+blbot.Polling(function (update) { return __awaiter(void 0, void 0, void 0, function () {
+    var res, inputPhotoArray, res;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    return __generator(this, function (_k) {
+        switch (_k.label) {
             case 0:
-                if (!((_a = message.message) === null || _a === void 0 ? void 0 : _a.text)) return [3 /*break*/, 11];
-                if (!(message.message.text.split(" ")[0] === "/start")) return [3 /*break*/, 4];
-                if (!(((_b = message.message.chat) === null || _b === void 0 ? void 0 : _b.id) && message.message.message_id)) return [3 /*break*/, 3];
-                return [4 /*yield*/, blbot.sendMessage(message.message.chat.id, "\u0633\u0644\u0627\u0645 \u062F\u0648\u0633\u062A \u062E\u0648\u0628 \u0645\u0646!\n                    ", message.message.message_id)];
+                if (!((_a = update.message) === null || _a === void 0 ? void 0 : _a.text)) return [3 /*break*/, 11];
+                if (!(update.message.text.split(" ")[0] === "/start")) return [3 /*break*/, 3];
+                if (!(((_b = update.message.chat) === null || _b === void 0 ? void 0 : _b.id) && update.message.message_id)) return [3 /*break*/, 2];
+                return [4 /*yield*/, blbot.sendMessage(update.message.chat.id, "\u0633\u0644\u0627\u0645 \u062F\u0648\u0633\u062A \u062E\u0648\u0628 \u0645\u0646!\n                    ", update.message.message_id)];
             case 1:
-                _g.sent();
-                return [4 /*yield*/, blbot.getChat(message.message.chat.id)];
-            case 2:
-                res = _g.sent();
-                console.log((_c = res.result) === null || _c === void 0 ? void 0 : _c.title);
-                _g.label = 3;
-            case 3: return [2 /*return*/];
+                _k.sent();
+                _k.label = 2;
+            case 2: return [2 /*return*/];
+            case 3:
+                if (!(update.message.text.split(" ")[0] === "/getInfo")) return [3 /*break*/, 6];
+                if (!((_d = (_c = update === null || update === void 0 ? void 0 : update.message) === null || _c === void 0 ? void 0 : _c.chat) === null || _d === void 0 ? void 0 : _d.id)) return [3 /*break*/, 6];
+                return [4 /*yield*/, blbot.getChat(update.message.chat.id)];
             case 4:
-                if (!(message.message.text.split(" ")[0] === "/getInfo")) return [3 /*break*/, 6];
-                if (!message.message.chat) return [3 /*break*/, 6];
-                return [4 /*yield*/, blbot.getChat(message.message.chat.id)];
+                res = _k.sent();
+                if (!((_e = res.result) === null || _e === void 0 ? void 0 : _e.title)) return [3 /*break*/, 6];
+                return [4 /*yield*/, blbot.sendMessage(update.message.chat.id, (_f = res.result) === null || _f === void 0 ? void 0 : _f.title)];
             case 5:
-                res = _g.sent();
-                _g.label = 6;
+                _k.sent();
+                _k.label = 6;
             case 6:
-                if (!(message.message.text.split(" ")[0] === "/img")) return [3 /*break*/, 9];
-                if (!(((_d = message.message.chat) === null || _d === void 0 ? void 0 : _d.id) && ((_e = message.message.from) === null || _e === void 0 ? void 0 : _e.id))) return [3 /*break*/, 8];
+                if (!(update.message.text.split(" ")[0] === "/img")) return [3 /*break*/, 9];
+                if (!(((_g = update.message.chat) === null || _g === void 0 ? void 0 : _g.id) && ((_h = update.message.from) === null || _h === void 0 ? void 0 : _h.id))) return [3 /*break*/, 8];
                 inputPhotoArray = [{ type: "photo", caption: "helloi", media: "https://cdn.soft98.ir/K-Lite.jpg" }, { type: "photo", caption: "helloi", media: "https://cdn.soft98.ir/K-Lite.jpg" }];
-                return [4 /*yield*/, blbot.sendMediaGroup(message.message.chat.id, inputPhotoArray)];
+                return [4 /*yield*/, blbot.sendMediaGroup(update.message.chat.id, inputPhotoArray)];
             case 7:
-                res = _g.sent();
+                res = _k.sent();
                 console.log({ message: res.statusMessage, status: res.statusCode });
-                _g.label = 8;
+                _k.label = 8;
             case 8: return [2 /*return*/];
             case 9:
-                if (!(((_f = message.message.chat) === null || _f === void 0 ? void 0 : _f.id) && message.message.message_id)) return [3 /*break*/, 11];
-                return [4 /*yield*/, blbot.sendMessage(message.message.chat.id, "".concat(message.message.text, "\n                    "), message.message.message_id)];
+                if (!(((_j = update.message.chat) === null || _j === void 0 ? void 0 : _j.id) && update.message.message_id)) return [3 /*break*/, 11];
+                return [4 /*yield*/, blbot.sendMessage(update.message.chat.id, "".concat(update.message.text, "\n                    "), update.message.message_id)];
             case 10:
-                _g.sent();
+                _k.sent();
                 return [2 /*return*/];
             case 11: return [2 /*return*/];
         }
